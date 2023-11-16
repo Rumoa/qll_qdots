@@ -100,9 +100,3 @@ def to_chi_from_super(superopmat):  # this is correct.
                             suma = suma + value
             aux[alpha, beta] = suma
     return aux
-
-
-seed = 1
-example_process = qu.rand_super(2, seed=seed)
-
-example_xij = qu.rand_herm(N=4, seed=seed + 1)

@@ -1,9 +1,16 @@
 import pytest
 import logging
-from process_representations import *
+from src.qdots_qll_rumoa/process_representations import *
+
 
 logger = logging.getLogger("__process_representations__")
 logger.setLevel(logging.INFO)
+
+
+seed = 1
+example_process = qu.rand_super(2, seed=seed)
+
+example_xij = qu.rand_herm(N=4, seed=seed + 1)
 
 
 def test_to_choi_from_super():
