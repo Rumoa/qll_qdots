@@ -1,17 +1,19 @@
 import jax.numpy as jnp
-from jax import grad, jit, vmap, value_and_grad
-from jax import random
+from jax import jit
+
+# from jax import grad, jit, vmap, value_and_grad
+# from jax import random
 
 import jax
 
 import numpy as np
 
-import matplotlib.pyplot as plt
+# import matplotlib.pyplot as plt
 
-from functools import partial
+# from functools import partial
 
 
-import os
+# import os
 
 # os.environ['XLA_PYTHON_CLIENT_PREALLOCATE']='false'
 # os.environ["XLA_PYTHON_CLIENT_MEM_FRACTION"] = ".80"
@@ -38,7 +40,7 @@ def dag(a):
         a (_type_): _description_
 
     Returns:
-        _type_: a^{\dagger}
+        _type_: a^{\\dagger}
     """
     return jnp.conjugate(a.T)
 
