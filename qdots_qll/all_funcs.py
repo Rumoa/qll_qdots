@@ -238,3 +238,14 @@ def initialize_particle_locations(key, model):
             subkeys, boundaries, no_of_particles
         ).T,
     )
+
+
+# TODO write this in jax
+# def spre(A):
+#     return np.kron(np.eye(2), A)
+#
+# def spost(B):
+#     return np.kron(B.T, np.eye(2))
+#
+# def sprepost(A,B):
+#     return np.kron(B.T, A)
