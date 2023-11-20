@@ -240,6 +240,21 @@ def initialize_particle_locations(key, model):
     )
 
 
+@jit
+def generate_data(
+    key,
+    measurement_op,
+    t,
+    phys_model,
+):
+    true_L = phys_model["True Lindbladian"]
+    rho0 = phys_model["Initial state"]
+    rhot = v_evolve(t, true_L, rho0)
+    p = compute_p(rhot, measurement_op)
+    key, subkey = jax.random.split(key)
+    return key, jax.random.choice(subkey, a=jnp.array([0, 1]), p=jnp.array([1, 1 - p]))
+
+
 # TODO write this in jax
 # def spre(A):
 #     return np.kron(np.eye(2), A)
@@ -249,3 +264,45 @@ def initialize_particle_locations(key, model):
 #
 # def sprepost(A,B):
 #     return np.kron(B.T, A)
+
+
+@jit
+def ESS(weights):
+    return 1 / jnp.sum(weights**2)
+
+
+@jit
+def resample_now(
+    key,
+    particle_locations,
+    weights,
+    a=0.95,
+):
+    no_particles = particle_locations.shape[0]
+    no_pars = particle_locations.shape[1]
+    mu = est_mean(particle_locations, weights)
+    h = jnp.sqrt(1 - a**2)
+    sigma = est_cov(particle_locations, weights) * h**2
+
+    # sigma = (
+    #     jnp.diag(jnp.array([10, 10, 1, 1, 1]))
+    #     @ sigma
+    #     @ jnp.diag(jnp.array([10, 10, 1, 1, 1]))
+    # )
+
+    key, subkey = jax.random.split(key)
+    new_mu = (
+        a
+        * jax.random.choice(
+            subkey, particle_locations, shape=(no_particles,), p=weights
+        )
+        + (1 - a) * mu
+    )
+
+    key, subkey = jax.random.split(key)
+    new_particles_location = jax.random.multivariate_normal(
+        subkey, new_mu, sigma, shape=(no_particles,)
+    )
+
+    new_weights = jnp.ones(no_particles) / no_particles
+    return key, new_particles_location, new_weights
