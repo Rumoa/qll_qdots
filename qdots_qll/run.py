@@ -16,6 +16,7 @@ class Run(eqx.Module):
     min_iterations: int
     std_threshold: float
     cov_array: jax.Array
+    estimates_array: jax.Array
 
     def __init__(
         self,
@@ -24,6 +25,7 @@ class Run(eqx.Module):
         weights,
         particles_locations,
         cov_array,
+        estimates_array,
         max_iterations,
         min_iterations,
         std_threshold,
@@ -33,6 +35,7 @@ class Run(eqx.Module):
         self.weights = weights
         self.particles_locations = particles_locations
         self.cov_array = cov_array
+        self.estimates_array = estimates_array
         self.max_iterations = max_iterations
         self.min_iterations = min_iterations
         self.std_threshold = std_threshold
@@ -51,7 +54,8 @@ class Run(eqx.Module):
 
     def unwrap_non_updatable_elements(self):
         """
-        Complementary of the above function, except the cov_array.
+        Complementary of the above function, except the cov_array
+        and estimates array.
         """
         return [
             self.max_iterations,

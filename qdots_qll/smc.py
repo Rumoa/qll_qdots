@@ -43,7 +43,15 @@ def _iteration_smc(
 
     weights = all_f.update_weights(lkl, weights)
     covariance = all_f.est_cov(particles_locations, weights)
-    return iteration + 1, key, weights, particles_locations, covariance
+    estimates = all_f.est_mean(particles_locations, weights)
+    return (
+        iteration + 1,
+        key,
+        weights,
+        particles_locations,
+        covariance,
+        estimates,
+    )
 
 
 # STOPPING FUNCTIONS: Used to check if we stop the while loop.
@@ -145,8 +153,8 @@ def _check_conditions_exit(run_object):
     # Compute the norm of these last covariances
     array_of_cov_norms = jax.vmap(jnp.linalg.norm, in_axes=(0))(cov_array)
 
-    # We check the conditions regarding iter < max_iter and std of norm of 
-    #covariance > threshold.
+    # We check the conditions regarding iter < max_iter and std of norm of
+    # covariance > threshold.
 
     iter_condition = _niter_check_exit(n_iter, max_iter)
     norm_std_condition = _std_check_exit(
@@ -175,6 +183,7 @@ def update_run_with_partial_func(run_object, partial_function_to_update):
         weights,
         particles_locations,
         covariance,
+        estimates,
     ) = updated_variables
 
     key, particles_locations, weights = jax.lax.cond(
@@ -193,10 +202,20 @@ def update_run_with_partial_func(run_object, partial_function_to_update):
         updated_variables[4]
     )  # set of new covariance
 
+    # we repeat the same with the estimates
+
+    old_estimates = run_object.estimates_array
+    new_estimates = old_estimates.at[new_iter].set(
+        estimates
+    )  # set of new covariance
+
     # create another instance of run object with the updated things
     return Run(
-        *(updated_variables[:-1]),  # don't include the covariance vector
+        *(
+            updated_variables[:-2]
+        ),  # don't include the covariance vector and the estimated array
         new_cov,  # add the updated array with covariance
+        new_estimates,
         *run_object.unwrap_non_updatable_elements()
     )
 

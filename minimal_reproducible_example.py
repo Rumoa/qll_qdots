@@ -8,6 +8,12 @@ import jax
 import matplotlib.pyplot as plt
 
 
+seed = 10
+key = jax.random.PRNGKey(seed=seed)
+
+key, subkey = jax.random.split(key)
+
+
 model = game.physical_model()
 
 true_pars = game.true_pars
@@ -20,15 +26,10 @@ bnds = jnp.array(
     ]
 )
 
-seed = 10
-key = jax.random.PRNGKey(seed=seed)
 
-key, subkey = jax.random.split(key)
+number_of_particles = 500
 
-
-number_of_particles = 4000
-
-max_iterations = 10000
+max_iterations = 5000
 min_iterations = 100
 
 
@@ -40,6 +41,9 @@ initial_cov_array = jnp.zeros(
     [max_iterations, model.number_of_parameters, model.number_of_parameters]
 )
 
+initial_estimates_array = jnp.zeros(
+    [max_iterations, model.number_of_parameters]
+)
 
 initial_run = Run(
     iteration=0,
@@ -47,6 +51,7 @@ initial_run = Run(
     weights=init_weights,
     particles_locations=init_particles_locations,
     cov_array=initial_cov_array,
+    estimates_array=initial_estimates_array,
     max_iterations=max_iterations,
     min_iterations=min_iterations,
     std_threshold=1e-7,
