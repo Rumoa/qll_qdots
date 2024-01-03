@@ -1,0 +1,9 @@
+2024-01-02 18:33:28,607 - - INFO: Initial seed: 10
+2024-01-02 18:33:29,082 - - INFO: Number of particles: 2000
+2024-01-02 18:33:29,082 - - INFO: Maximum iterations: 4000
+2024-01-02 18:33:29,083 - - INFO: Minimum iterations: 100
+2024-01-02 18:33:29,083 - - INFO: Number of runs: 500
+2024-01-02 18:33:29,083 - - INFO: Std threshold: 1e-08
+2024-01-02 18:33:29,143 - - INFO: Vmap is called
+2024-01-02 19:35:16,557 - - INFO: Saving model and results...
+2024-01-02 19:35:16,834 - - INFO: Runs completed
