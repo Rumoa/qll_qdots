@@ -117,7 +117,8 @@ class physical_model(eqx.Module):
     def make_liouvillian(self, particle):
         gn, gp, Sn, Sp = particle
         Snot = -self.delta
-        gnot = 0
+        gnot = 1e-7  # if we write zero derivatives explode
+        # because this appears in square roots d/dx (sqrt) prop to 1/sqrt
 
         U = jnp.linalg.eigh(self.H0)[1]
         Aij = U @ self.A @ dag(U)
@@ -171,6 +172,15 @@ class physical_model(eqx.Module):
 
     @jit
     def fim(self, particle, t):
+        """Given a particle and time, computes the Fisher Information Matrix
+
+        Args:
+            particle (_type_): (j)np array of particle
+            t (_type_): time
+
+        Returns:
+            _type_: _description_
+        """
         jacobian = jax.jacobian(self.likelihood_particle, 0)(particle, t)
         lkl = self.likelihood_particle(particle, t)
         return jnp.einsum("ij, ik, i -> jk", jacobian, jacobian, 1 / lkl)
