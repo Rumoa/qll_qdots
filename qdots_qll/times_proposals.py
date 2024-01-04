@@ -25,7 +25,7 @@ def maximize_fim_time(t, particle, model, alpha):
 
 
 @jit
-def fim_time_generator(key, estimated_particles, model):
+def fim_time_generator(key, estimated_particles, model, maxval=100):
     no_candidates = 10
     key, subkey = jax.random.split(key)
 
@@ -33,7 +33,7 @@ def fim_time_generator(key, estimated_particles, model):
         subkey,
         shape=(no_candidates,),
         minval=0.01,
-        maxval=40.0,
+        maxval=maxval,
     )
 
     times = vmap(maximize_fim_time, in_axes=(0, None, None, None))(

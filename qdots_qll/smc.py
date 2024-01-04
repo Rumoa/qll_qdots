@@ -9,6 +9,7 @@ from qdots_qll.models import game
 import qdots_qll.all_funcs as all_f
 from functools import partial
 from qdots_qll.run import Run
+from qdots_qll.times_proposals import fim_time_generator
 
 
 @jit
@@ -22,7 +23,21 @@ def _iteration_smc(
     number_of_experimental_repetitions=10,
 ):
     key, subkey = jax.random.split(key)
-    t = jax.random.uniform(key=subkey, minval=0.01, maxval=40)
+
+    # We need to substitute this with the function that computes guesses times,
+    # computes the fim for each one and update them.
+
+    # This estimate goes into the time generator function.
+    current_estimated_parameters = all_f.est_mean(particles_locations, weights)
+
+    # t = jax.random.uniform(key=subkey, minval=0.01, maxval=40)
+
+    t = fim_time_generator(
+        key=subkey,
+        estimated_particles=current_estimated_parameters,
+        model=model,
+    )
+
     keys = jax.random.split(key, number_of_experimental_repetitions + 1)
 
     key = keys[0]
