@@ -37,6 +37,7 @@ def _iteration_smc(
         estimated_particles=current_estimated_parameters,
         model=model,
     )
+    jax.debug.print("🤯 {x} 🤯", x=t)
 
     keys = jax.random.split(key, number_of_experimental_repetitions + 1)
 

@@ -44,4 +44,4 @@ def fim_time_generator(key, estimated_particles, model, maxval=100):
         lambda time: jnp.linalg.norm(model.fim(estimated_particles, time)),
         in_axes=(0),
     )(times)
-    return key, times[np.argmax(norm_fims)]
+    return times[jnp.argmax(norm_fims)]
