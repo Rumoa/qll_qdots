@@ -24,9 +24,10 @@ logging.basicConfig(
 )
 
 logging.info(
-    f"We replicate the same setup as the one that produce the results run_2024-01-02_18:33:28.log but using time optimization "
+    f"We replicate the same setup as the one that produce the results results/run_2024-01-04_17:12:39.log which already uses time optimization "
 )
 
+logging.info(f"Max time now is 40 instead of 100 ")
 seed = 10
 logging.info(f"Initial seed: {seed}")
 key = jax.random.PRNGKey(seed=seed)

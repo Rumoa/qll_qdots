@@ -36,6 +36,7 @@ def _iteration_smc(
         key=subkey,
         estimated_particles=current_estimated_parameters,
         model=model,
+        maxval=40,
     )
     # jax.debug.print("🤯 {x} 🤯", x=t)
 
