@@ -37,7 +37,7 @@ def _iteration_smc(
         estimated_particles=current_estimated_parameters,
         model=model,
     )
-    jax.debug.print("🤯 {x} 🤯", x=t)
+    # jax.debug.print("🤯 {x} 🤯", x=t)
 
     keys = jax.random.split(key, number_of_experimental_repetitions + 1)
 
@@ -98,7 +98,8 @@ def _std_check_exit(array_of_cov_norms, threshold):
         threshold (_type_): threshold
 
     Returns:
-        _type_: Returns true if the standard deviation among norms is greater or equal than epsilon. False otherwise
+        _type_: Returns true if the standard deviation among norms is
+        greater or equal than epsilon. False otherwise
     """
 
     pred = jnp.nanstd(array_of_cov_norms)
@@ -120,7 +121,8 @@ def _niter_check_exit(n_iter, max_iter):
         threshold (_type_): threshold
 
     Returns:
-        _type_: Returns true if the standard deviation among norms is greater or equal than epsilon. False otherwise
+        _type_: Returns true if the standard deviation among norms is
+                greater or equal than epsilon. False otherwise
     """
 
     return jax.lax.cond(
@@ -130,10 +132,13 @@ def _niter_check_exit(n_iter, max_iter):
 
 def _check_conditions_exit(run_object):
     # array_of_cov_norms, n_iter, threshold_cov_norm, max_iter
-    """Returns True when execution should continue. Three conditions are checked:
-    - True if n_iter (current iteration) is < than the minimum iteration to start checking things.
+    """Returns True when execution should continue.
+       Three conditions are checked:
+    - True if n_iter (current iteration) is < than the minimum iteration
+        to start checking things.
     - If n_iter > min_iter, returns True if n_iter is < max iterations
-    - If std_norm_cov_array of last 10 iterations  > than the threshold to stop, return True.
+    - If std_norm_cov_array of last 10 iterations  > than the threshold
+        to stop, return True.
 
 
     Args:
@@ -146,7 +151,8 @@ def _check_conditions_exit(run_object):
         _type_: _description_
     """
 
-    # From the object we extract important information. The current iteration, the max iteration, the min_iteration
+    # From the object we extract important information. The current iteration,
+    # the max iteration, the min_iteration
     # to start checking things and the threshold to stop.
 
     n_iter = run_object.iteration
