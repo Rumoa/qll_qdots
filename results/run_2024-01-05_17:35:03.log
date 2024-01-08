@@ -1,0 +1,11 @@
+2024-01-05 17:35:03,736 - - INFO: We replicate the same setup as the one that produce the results results/run_2024-01-04_17:12:39.log which already uses time optimization 
+2024-01-05 17:35:03,736 - - INFO: Max time now is 40 instead of 100 
+2024-01-05 17:35:03,736 - - INFO: Initial seed: 10
+2024-01-05 17:35:04,237 - - INFO: Number of particles: 2000
+2024-01-05 17:35:04,237 - - INFO: Maximum iterations: 4000
+2024-01-05 17:35:04,237 - - INFO: Minimum iterations: 100
+2024-01-05 17:35:04,237 - - INFO: Number of runs: 500
+2024-01-05 17:35:04,237 - - INFO: Std threshold: 1e-08
+2024-01-05 17:35:04,306 - - INFO: Vmap is called
+2024-01-06 05:03:36,595 - - INFO: Saving model and results...
+2024-01-06 05:03:36,839 - - INFO: Runs completed
