@@ -4,7 +4,12 @@ __pycache__/
 *$py.class
 
 qdots_qll/__pycache__/
+qdots_qll.egg-info
 tests/__pycache__/
+
+.idea
+.pytest_cache
+.vscode
 
 
 # C extensions
