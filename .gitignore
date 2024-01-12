@@ -4,6 +4,8 @@ __pycache__/
 *$py.class
 
 qdots_qll/__pycache__/
+tests/__pycache__/
+
 
 # C extensions
 *.so
