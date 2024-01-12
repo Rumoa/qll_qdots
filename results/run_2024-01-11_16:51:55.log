@@ -1,0 +1,10 @@
+2024-01-11 16:51:55,515 - - INFO: No choi state used. We evolve max entangled state,     each one with the same liouvillian
+2024-01-11 16:51:55,515 - - INFO: Initial seed: 10
+2024-01-11 16:51:56,053 - - INFO: Number of particles: 2000
+2024-01-11 16:51:56,053 - - INFO: Maximum iterations: 4000
+2024-01-11 16:51:56,053 - - INFO: Minimum iterations: 100
+2024-01-11 16:51:56,053 - - INFO: Number of runs: 500
+2024-01-11 16:51:56,054 - - INFO: Std threshold: 1e-08
+2024-01-11 16:51:56,125 - - INFO: Vmap is called
+2024-01-11 17:56:43,991 - - INFO: Saving model and results...
+2024-01-11 17:56:44,299 - - INFO: Runs completed

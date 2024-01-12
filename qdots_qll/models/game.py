@@ -199,3 +199,115 @@ class physical_model(eqx.Module):
 @jit
 def likelihood_data(lkl_results, result):
     return lkl_results[result]
+
+
+class physical_model_sic_POVM_no_choi(eqx.Module):
+    number_of_parameters: int
+    delta: float
+    Omega: float
+    H0: jax.Array
+    A: jax.Array
+    sic_POVM_arr: jax.Array
+    basis_elements: jax.Array
+    # true_parameters: jax.Array
+
+    def __init__(self):
+        self.number_of_parameters = 4
+        self.delta = 0.12739334807998307
+        self.Omega = 0.5
+        self.H0 = self.make_H0()
+        self.A = jnp.array([[1, 0], [0, 0]])
+        self.sic_POVM_arr = get_SIC_POVM_4D()
+        self.basis_elements = jnp.identity(4)
+
+    @jit
+    def make_H0(self):
+        return jnp.array([[self.delta, self.Omega / 2], [self.Omega / 2, 0]])
+
+    @jit
+    def make_liouvillian(self, particle):
+        gn, gp, Sn, Sp = particle
+        Snot = -self.delta
+        gnot = 1e-7  # if we write zero derivatives explode
+        # because this appears in square roots d/dx (sqrt) prop to 1/sqrt
+
+        U = jnp.linalg.eigh(self.H0)[1]
+        Aij = U @ self.A @ dag(U)
+        Cp = 0.5 * gp + 1j * Sp
+        Cn = 0.5 * gn + 1j * Sn
+        Cnot = 0.5 * gnot + 1j * Snot
+
+        Gamma = jnp.array([[Cnot, Cn], [Cp, Cnot]])
+
+        sqrtgamma = jnp.sqrt(jnp.real(Gamma))
+
+        L = jnp.multiply(Aij, sqrtgamma)
+
+        Af = jnp.multiply(Aij, jnp.conjugate(Gamma))
+        Hrenorm = -1j / 2 * (Aij @ dag(Af) - Af @ dag(Aij))
+
+        Htotal = U @ self.H0 @ dag(U) + Hrenorm
+        Liouvillian_ebasis = (
+            -1j * (spre(Htotal) - spost(Htotal))
+            + sprepost(dag(L), L)
+            - 0.5 * (spre(L @ dag(L)) + spost(L @ dag(L)))
+        )
+        return (
+            sprepost(U, dag(U)) @ Liouvillian_ebasis @ dag(sprepost(U, dag(U)))
+        )
+
+    @jit
+    def generate_joint_evolved_state(self, particle, t):
+        # It is equivalent to do a choi state with the difference that we
+        # do the tensor product of both evolved basis
+        L = self.make_liouvillian(particle)
+
+        evolved_basis_array = vmap(evolve_basis, (None, None, 0))(
+            t,
+            L,
+            self.basis_elements,
+        )
+
+        return (
+            construct_choi_state(
+                evolved_basis_array,
+                evolved_basis_array,
+            )
+            / 2
+        )
+
+    @jit
+    def likelihood_particle(self, particle, t):
+        evolved_joint_state = self.generate_joint_evolved_state(
+            particle, t
+        )  # we need to change this
+        # to just evolve the joint maximally entangled state.
+
+        return jax.vmap(compute_P_singleop, in_axes=(None, 0))(
+            evolved_joint_state, self.sic_POVM_arr
+        )
+
+    @jit
+    def fim(self, particle, t):
+        """Given a particle and time, computes the Fisher Information Matrix
+
+        Args:
+            particle (_type_): (j)np array of particle
+            t (_type_): time
+
+        Returns:
+            _type_: _description_
+        """
+        jacobian = jax.jacobian(self.likelihood_particle, 0)(particle, t)
+        lkl = self.likelihood_particle(particle, t)
+        return jnp.einsum("ij, ik, i -> jk", jacobian, jacobian, 1 / lkl)
+
+    @jit
+    def generate_data(self, key, true_particle, t):
+        probabilities = self.likelihood_particle(true_particle, t)
+        probabilities = probabilities / probabilities.sum()
+        no_of_outcomes = self.sic_POVM_arr.shape[0]
+        outcome = jax.random.choice(
+            key, a=jnp.arange(no_of_outcomes), p=probabilities
+        )
+        return outcome
