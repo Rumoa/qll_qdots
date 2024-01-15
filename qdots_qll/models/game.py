@@ -85,9 +85,15 @@ def construct_choi_state(basis_elements, evolved_basis_elements):
     return suma
 
 
+# This sets zero if the array has a nan
+check_nan = jax.jit(
+    lambda a: jax.lax.cond(jnp.isnan(a), lambda a: 0.0, lambda a: a, a)
+)
+
+
 @jit
 def compute_P_singleop(evolved_choi, POVM):
-    return jnp.real(jnp.trace(evolved_choi @ POVM))
+    return check_nan(jnp.real(jnp.trace(evolved_choi @ POVM)))
 
 
 class physical_model(eqx.Module):
