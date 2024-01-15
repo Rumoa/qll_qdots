@@ -9,7 +9,8 @@ from qdots_qll.models import game
 import qdots_qll.all_funcs as all_f
 from functools import partial
 from qdots_qll.run import Run
-from qdots_qll.times_proposals import fim_time_generator
+
+# from qdots_qll.times_proposals import fim_time_generator
 
 
 @jit
@@ -28,7 +29,8 @@ def _iteration_smc(
     # computes the fim for each one and update them.
 
     # This estimate goes into the time generator function.
-    # current_estimated_parameters = all_f.est_mean(particles_locations, weights)
+    # current_estimated_parameters = all_f.est_mean(particles_locations,
+    # weights)
 
     # t = fim_time_generator(
     #     key=subkey,
@@ -58,11 +60,14 @@ def _iteration_smc(
     lkl = jnp.prod(lkl_results_all_particles, axis=1)
 
     weights = all_f.update_weights(lkl, weights)
+
+    # jax.debug.breakpoint()
     covariance = all_f.est_cov(particles_locations, weights)
     estimates = all_f.est_mean(particles_locations, weights)
     return (
         iteration + 1,
         key,
+        t,  # We also return the time to save it later
         weights,
         particles_locations,
         covariance,
@@ -194,52 +199,88 @@ def _check_conditions_exit(run_object):
 
 @partial(jax.jit, static_argnums=1)
 def update_run_with_partial_func(run_object, partial_function_to_update):
+    # Reminder for myself of how it works.
+
+    # We call the update function with the parameters that are required.
+    # i.e: iteration, key, time, weights, particles_locations
+
     # update the weights
     updated_variables = partial_function_to_update(
         run_object.unwrap_updatable_elements()
-    )
+    )  # this corresponds to iteration, key, times array,
+    # , weights, particles_location
 
+    # The updated variables are:
     (
         iteration,
         key,
+        new_time,
         weights,
         particles_locations,
         covariance,
         estimates,
     ) = updated_variables
 
+    # jax.debug.breakpoint()
+
+    # We decide whether to update or not
     key, particles_locations, weights = jax.lax.cond(
         all_f.ESS(weights) > weights.shape[0] / 2,
         lambda a: a,
         lambda a: all_f.resample_now(*a),
         (key, particles_locations, weights),
     )
+    # jax.debug.breakpoint()
 
-    new_iter = updated_variables[
-        0
-    ]  # takes the number of iteration to set covariance in correct place
+    new_iter = iteration  # takes the number of iteration to
+    # set covariance in correct place
 
-    old_cov = run_object.cov_array
-    new_cov = old_cov.at[new_iter].set(
-        updated_variables[4]
+    # We need to add to the times array and to
+    # the weights and particle positions array.
+
+    old_cov_array = run_object.cov_array
+    new_cov_array = old_cov_array.at[new_iter].set(
+        covariance
     )  # set of new covariance
 
     # we repeat the same with the estimates
 
-    old_estimates = run_object.estimates_array
-    new_estimates = old_estimates.at[new_iter].set(
+    old_estimates_array = run_object.estimates_array
+    new_estimates_array = old_estimates_array.at[new_iter].set(
         estimates
     )  # set of new covariance
 
+    # set the new times
+    old_times_array = run_object.times_array
+    new_times_array = old_times_array.at[new_iter].set(new_time)
+
+    # we should set now the weights and the particle positions.
+
+    # We are going to do this more explicit.
     # create another instance of run object with the updated things
+
     return Run(
-        *(
-            updated_variables[:-2]
-        ),  # don't include the covariance vector and the estimated array
-        new_cov,  # add the updated array with covariance
-        new_estimates,
+        iteration,
+        key,
+        # new_time,
+        weights,
+        particles_locations,
+        new_cov_array,
+        new_estimates_array,
+        new_times_array,
+        # we need to add the weights array,
+        # The particles locations_array,
         *run_object.unwrap_non_updatable_elements()
     )
+
+    # return Run(
+    #     *(
+    #         updated_variables[:-2]
+    #     ),  # don't include the covariance vector and the estimated array
+    #     new_cov,  # add the updated array with covariance
+    #     new_estimates,
+    #     *run_object.unwrap_non_updatable_elements()
+    # )
 
 
 def _make_partial_update_smc_object(a, f):

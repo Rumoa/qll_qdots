@@ -10,6 +10,7 @@ import equinox as eqx
 class Run(eqx.Module):
     iteration: int
     key: jax.Array
+    # time: jax.Array
     weights: jax.Array
     particles_locations: jax.Array
     max_iterations: int
@@ -17,25 +18,30 @@ class Run(eqx.Module):
     std_threshold: float
     cov_array: jax.Array
     estimates_array: jax.Array
+    times_array: jax.Array
 
     def __init__(
         self,
         iteration,
         key,
+        # time,
         weights,
         particles_locations,
         cov_array,
         estimates_array,
+        times_array,
         max_iterations,
         min_iterations,
         std_threshold,
     ):
         self.iteration = iteration
         self.key = key
+        # self.time = time
         self.weights = weights
         self.particles_locations = particles_locations
         self.cov_array = cov_array
         self.estimates_array = estimates_array
+        self.times_array = times_array
         self.max_iterations = max_iterations
         self.min_iterations = min_iterations
         self.std_threshold = std_threshold

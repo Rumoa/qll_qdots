@@ -23,11 +23,9 @@ logging.basicConfig(
     format="%(asctime)s - - %(levelname)s: %(message)s",
 )
 
-seed = 10
+seed = 40
 logging.info(f"Initial seed: {seed}")
 key = jax.random.PRNGKey(seed=seed)
-
-key, subkey = jax.random.split(key)
 
 
 model = game.physical_model()
@@ -43,15 +41,15 @@ bnds = jnp.array(
 )
 
 
-number_of_particles = 2000
+number_of_particles = 1000
 logging.info(f"Number of particles: {number_of_particles}")
 
-max_iterations = 4000
+max_iterations = 1000
 min_iterations = 100
 logging.info(f"Maximum iterations: {max_iterations}")
 logging.info(f"Minimum iterations: {min_iterations}")
 
-number_of_runs = 500
+number_of_runs = 2
 
 logging.info(f"Number of runs: {number_of_runs}")
 
@@ -82,13 +80,17 @@ def fun_to_parallelize_run_smc(key):
         [max_iterations, model.number_of_parameters]
     )
 
+    initial_times_array = jnp.zeros([max_iterations])
+
     initial_run = Run(
         iteration=0,
         key=key,
+        # time=initial_times_array[0],
         weights=init_weights,
         particles_locations=init_particles_locations,
         cov_array=initial_cov_array,
         estimates_array=initial_estimates_array,
+        times_array=initial_times_array,
         max_iterations=max_iterations,
         min_iterations=min_iterations,
         std_threshold=std_stop,
