@@ -54,3 +54,6 @@ data_analysis/analysis_using_all_estimates.ipynb
 qdots_qll/models/__pycache__/__init__.cpython-311.pyc
 qdots_qll/models/__pycache__/game.cpython-311.pyc
 
+results/run_2024-01-15_16:20:40_model.job
+results/run_2024-01-15_16:20:40_results.job
+results/run_2024-01-15_16:20:40.log
