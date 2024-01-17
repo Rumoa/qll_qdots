@@ -29,16 +29,16 @@ def _iteration_smc(
     # computes the fim for each one and update them.
 
     # This estimate goes into the time generator function.
-    current_estimated_parameters = all_f.est_mean(particles_locations, weights)
+    # current_estimated_parameters = all_f.est_mean(particles_locations, weights)
 
-    t = fim_time_generator(
-        key=subkey,
-        estimated_particles=current_estimated_parameters,
-        model=model,
-        maxval=40,
-    )
+    # t = fim_time_generator(
+    #     key=subkey,
+    #     estimated_particles=current_estimated_parameters,
+    #     model=model,
+    #     maxval=40,
+    # )
 
-    # t = jax.random.uniform(key=subkey, minval=0.01, maxval=40)
+    t = jax.random.uniform(key=subkey, minval=0.01, maxval=40)
 
     keys = jax.random.split(key, number_of_experimental_repetitions + 1)
 
