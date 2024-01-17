@@ -86,6 +86,7 @@ def fun_to_parallelize_run_smc(key):
     initial_estimates_array = jnp.zeros(
         [max_iterations, model.number_of_parameters]
     )
+    initial_times_array = jnp.zeros([max_iterations])
 
     initial_run = Run(
         iteration=0,
@@ -94,6 +95,7 @@ def fun_to_parallelize_run_smc(key):
         particles_locations=init_particles_locations,
         cov_array=initial_cov_array,
         estimates_array=initial_estimates_array,
+        times_array=initial_times_array,
         max_iterations=max_iterations,
         min_iterations=min_iterations,
         std_threshold=std_stop,
