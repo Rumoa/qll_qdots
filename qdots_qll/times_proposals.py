@@ -6,7 +6,7 @@ from jax import jit, vmap
 @jit
 def maximize_fim_time(t, particle, model, alpha):
     derivative_fim_to_t = jax.grad(
-        (lambda par, t: jnp.linalg.norm(model.fim(par, t))), 1
+        (lambda par, t: jnp.linalg.det(model.fim(par, t))), 1
     )
 
     new_t = t
@@ -40,7 +40,7 @@ def fim_time_generator(key, estimated_particles, model, maxval=100):
     )
 
     norm_fims = vmap(
-        lambda time: jnp.linalg.norm(model.fim(estimated_particles, time)),
+        lambda time: jnp.linalg.det(model.fim(estimated_particles, time)),
         in_axes=(0),
     )(times)
     return times[jnp.argmax(norm_fims)]
