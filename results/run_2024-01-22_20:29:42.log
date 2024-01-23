@@ -1,0 +1,11 @@
+2024-01-22 20:29:42,985 - - INFO: We optimize with respect to determinant. We use Choi 
+2024-01-22 20:29:42,985 - - INFO: Max time now is 40 instead of 100 
+2024-01-22 20:29:42,985 - - INFO: Initial seed: 10
+2024-01-22 20:29:43,536 - - INFO: Number of particles: 2000
+2024-01-22 20:29:43,536 - - INFO: Maximum iterations: 4000
+2024-01-22 20:29:43,536 - - INFO: Minimum iterations: 100
+2024-01-22 20:29:43,536 - - INFO: Number of runs: 500
+2024-01-22 20:29:43,536 - - INFO: Std threshold: 1e-08
+2024-01-22 20:29:43,617 - - INFO: Vmap is called
+2024-01-23 01:22:11,618 - - INFO: Saving model and results...
+2024-01-23 01:22:11,872 - - INFO: Runs completed
