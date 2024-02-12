@@ -38,6 +38,8 @@ MANIFEST
 
 qdots_qll.egg-info/
 
+*.egg-info/
+
 
 
 
