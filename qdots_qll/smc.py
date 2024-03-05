@@ -21,7 +21,7 @@ def _iteration_smc(
     particles_locations,
     model,
     true_pars,
-    number_of_experimental_repetitions=10,
+    number_of_experimental_repetitions=1,
 ):
     key, subkey = jax.random.split(key)
 

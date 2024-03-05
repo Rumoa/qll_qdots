@@ -3,6 +3,7 @@ import jax.numpy as jnp
 from jax import jit, vmap
 
 
+# TODO Change this such that we can include different objective functions
 @jit
 def maximize_fim_time(t, particle, model, alpha):
     derivative_fim_to_t = jax.grad(
@@ -23,6 +24,7 @@ def maximize_fim_time(t, particle, model, alpha):
     return jax.lax.fori_loop(0, 20, body_fun_fori_loop, new_t)
 
 
+# TODO Change this such that we can include different objective functions
 @jit
 def fim_time_generator(key, estimated_particles, model, maxval=100):
     no_candidates = 10
@@ -39,8 +41,8 @@ def fim_time_generator(key, estimated_particles, model, maxval=100):
         candidates, estimated_particles, model, 0.5
     )
 
-    norm_fims = vmap(
+    utilities = vmap(
         lambda time: jnp.linalg.det(model.fim(estimated_particles, time)),
         in_axes=(0),
     )(times)
-    return times[jnp.argmax(norm_fims)]
+    return times[jnp.argmax(utilities)]
