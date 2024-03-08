@@ -49,12 +49,12 @@ bnds = jnp.array(
 number_of_particles = 1000
 logging.info(f"Number of particles: {number_of_particles}")
 
-max_iterations = 6000
+max_iterations = 1000000
 min_iterations = 100
 logging.info(f"Maximum iterations: {max_iterations}")
 logging.info(f"Minimum iterations: {min_iterations}")
 
-number_of_runs = 100
+number_of_runs = 10
 
 logging.info(f"Number of runs: {number_of_runs}")
 
