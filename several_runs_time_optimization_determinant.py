@@ -23,7 +23,7 @@ logging.basicConfig(
     format="%(asctime)s - - %(levelname)s: %(message)s",
 )
 
-logging.info(f"We optimize with respect to determinant. We use Choi ")
+logging.info(f"We optimize with respect to det. We use Choi ")
 
 logging.info(f"Max time now is 40 instead of 100 ")
 seed = 10
@@ -36,25 +36,37 @@ key, subkey = jax.random.split(key)
 model = game.physical_model()
 
 true_pars = game.true_pars
+# bnds = jnp.array(
+#     [
+#         [0.01, 0.9],
+#         [0.01, 0.9],
+#         [0.001, 0.22],
+#         [-0.01, -0.9],
+#     ]
+# )
+
+
 bnds = jnp.array(
     [
-        [0.01, 0.9],
-        [0.01, 0.9],
-        [0.001, 0.22],
-        [-0.01, -0.9],
+        [0.2, 0.4],
+        [0.2, 0.4],
+        [0.01, 0.09],
+        [-0.2, -0.5],
     ]
 )
 
 
-number_of_particles = 1000
+number_of_particles = 2000
 logging.info(f"Number of particles: {number_of_particles}")
 
-max_iterations = 1000000
+max_iterations = int(5e3)
 min_iterations = 100
 logging.info(f"Maximum iterations: {max_iterations}")
 logging.info(f"Minimum iterations: {min_iterations}")
 
-number_of_runs = 10
+logging.info(f"Parameter space boundaries: {bnds}")
+
+number_of_runs = 5
 
 logging.info(f"Number of runs: {number_of_runs}")
 

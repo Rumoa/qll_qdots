@@ -286,7 +286,7 @@ def resample_now(
     key,
     particle_locations,
     weights,
-    a=0.95,
+    a=0.98,  # 0.95 originally
 ):
     no_particles = particle_locations.shape[0]
     no_pars = particle_locations.shape[1]
