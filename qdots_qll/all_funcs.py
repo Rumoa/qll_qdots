@@ -20,6 +20,11 @@ os.environ["XLA_PYTHON_CLIENT_MEM_FRACTION"] = ".90"
 
 
 @jit
+def likelihood_data(lkl_results, result):
+    return lkl_results[result]
+
+
+@jit
 def vec(a):
     """Returns the vectorized version of a using the column ordering.
 

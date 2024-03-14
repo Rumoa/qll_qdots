@@ -1,6 +1,7 @@
 import jax
 import jax.numpy as jnp
 from jax import jit, vmap
+import qdots_qll.all_funcs as all_f
 
 
 # TODO Change this such that we can include different objective functions
@@ -25,8 +26,10 @@ def maximize_fim_time(t, particle, model, alpha):
 
 
 # TODO Change this such that we can include different objective functions
-@jit
-def fim_time_generator(key, estimated_particles, model, maxval=100):
+# @jit
+def fim_time_generator(key, particles_locations, weights, model, maxval=100):
+
+    estimated_particles = all_f.est_mean(particles_locations, weights)
     no_candidates = 10
     key, subkey = jax.random.split(key)
 
@@ -46,3 +49,8 @@ def fim_time_generator(key, estimated_particles, model, maxval=100):
         in_axes=(0),
     )(times)
     return times[jnp.argmax(utilities)]
+
+
+# @jit
+def random_time_generator(key, particles_locations, weights, model, maxval=40):
+    return jax.random.uniform(key=key, minval=0.01, maxval=maxval)

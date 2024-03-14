@@ -1,25 +1,32 @@
 import jax
 import jax.numpy as jnp
-from qdots_qll.models.game import *
+
+# from qdots_qll.models.game import *
 
 import qutip as qt
 
 import matplotlib.pyplot as plt
 
 from qbism import sic_povm
-
+from jax.scipy.linalg import expm
 import jax.typing
 
 import equinox as eqx
 
 
 from jax import Array
+from jax import jit
 
 # from jax.typing import ArrayLike
 from jaxtyping import Array, Float, Complex, Int
 
 seed = 3
 rho_ex = qt.rand_dm_ginibre(2, seed=seed)
+
+
+@jit
+def dag(A):
+    return jnp.conjugate(A.T)
 
 
 class base_class_dimension(eqx.Module):
@@ -266,11 +273,6 @@ class single_qdot(base_class_dimension):
         return qfim
 
 
-check_nan = jax.jit(
-    lambda a: jax.lax.cond(jnp.isnan(a), lambda a: 0.0, lambda a: a, a)
-)
-
-
 @jit
 def compute_P_superop(
     evolved_state_vec: Complex[Array, "d**2"],
@@ -381,10 +383,10 @@ class two_qdots_separable_maps(base_class_dimension):
         # convert to 2, 2, 2, 2
         # unswap 2nd and 3rd
         # vectorize
-        evolved_state = vec(
+        evolved_state = self.vec(
             (
                 total_map_superop
-                @ vec(
+                @ self.vec(
                     initial_state.reshape([2, 2, 2, 2])
                     .swapaxes(1, 2)
                     .reshape([4, 4])

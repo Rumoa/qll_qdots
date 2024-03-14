@@ -1,0 +1,18 @@
+[run]
+seed = 10
+pars_space_boundaries = [
+        [0.2, 0.4],
+        [0.2, 0.4],
+        [0.01, 0.09],
+        [-0.2, -0.5],
+    ]
+
+number_of_particles = 2000
+max_iterations = 5000
+min_iterations = 100
+number_of_runs = 5
+std_stop = 1e-8
+
+
+[logging]
+comments= "This is a comment\n I keep writing"
