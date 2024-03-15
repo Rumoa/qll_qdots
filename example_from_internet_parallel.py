@@ -26,7 +26,8 @@ from qdots_qll.run import Run, initial_run_from_config
 from qdots_qll.smc import SMCUpdater, SMC_run
 from qdots_qll.resamplers import LWResampler
 from qdots_qll.stop_conditions import TerminationChecker
-from qdots_qll.models.game import true_pars
+
+# from qdots_qll.models.game import true_pars
 from qdots_qll.distributions import (
     est_cov,
     est_mean,
@@ -84,7 +85,7 @@ key, subkey = jax.random.split(key)
 
 # print(initial_runs_compilation)
 # keys = jax.random.split(key, number_of_runs)
-
+true_pars = jnp.array(config["run"]["true_parameters"])
 
 resampler = LWResampler()
 exp_design = RandomExpDesign(0.01, 40)

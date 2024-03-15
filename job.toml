@@ -13,12 +13,18 @@ min_iterations = 100
 number_of_runs = 96
 std_stop = 1e-8
 exp_design =  "random"
+true_parameters = [ 0.314216,  0.35833 ,  0.053851, -0.333695]
+
 
 
 [logging]
 comments= "This is a comment\n I keep writing"
 
 [model]
+number_of_qdots = 2
+povm = "sic-povm"
+
+
 
 
 
