@@ -61,3 +61,33 @@ class SimpleDistribution(eqx.Module):
         self,
     ):
         return est_cov(self.particles_locations, self.weights)
+
+
+def initialize_particle_locations(
+    key,
+    no_of_parameters,
+    no_of_particles,
+    boundaries,
+):
+    # no_of_parameters = model["Number of parameters"]
+    # boundaries = model["Space boundaries"]
+    # no_of_particles = model["Number of particles"]
+    subkey = jax.random.split(key, no_of_parameters)
+    # key = subkey[1]
+    # subkeys = subkey[1:]
+    return (
+        jax.vmap(populate_one_axis, in_axes=(0, 0, None))(
+            subkey, boundaries, no_of_particles
+        )
+    ).T
+
+
+def populate_one_axis(key, bnds, no_particles):
+    return jax.random.uniform(
+        key, minval=jnp.min(bnds), maxval=jnp.max(bnds), shape=[no_particles]
+    )
+
+
+def initialize_weights(no_of_particles):
+    N = no_of_particles
+    return jnp.ones(N) / N

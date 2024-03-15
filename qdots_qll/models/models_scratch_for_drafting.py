@@ -20,8 +20,8 @@ from jax import jit
 # from jax.typing import ArrayLike
 from jaxtyping import Array, Float, Complex, Int
 
-seed = 3
-rho_ex = qt.rand_dm_ginibre(2, seed=seed)
+# seed = 3
+# rho_ex = qt.rand_dm_ginibre(2, seed=seed)
 
 
 @jit

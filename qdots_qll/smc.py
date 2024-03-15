@@ -499,3 +499,14 @@ class SMCUpdater(eqx.Module):
     # def smc_run(self, stop_checker_function, initial_run):
     #     step_fun = self.step
     #     return jax.lax.while_loop(stop_checker_function, step_fun, initial_run)
+
+
+@jax.jit
+def SMC_run(
+    initial_run,
+    checker_obj,
+    smc_obj,
+):
+    return jax.lax.while_loop(
+        checker_obj.check_stop, smc_obj.step, initial_run
+    )

@@ -90,3 +90,5 @@ results/run_2024-03-11_16:10:16_model.job
 results/run_2024-03-11_16:10:16_results.job
 results/run_2024-03-11_17:03:46_model.job
 results/run_2024-03-11_17:03:46_results.job
+checking_output_is_correct.ipynb
+parallelizing_cpus.ipynb

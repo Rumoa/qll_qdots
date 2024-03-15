@@ -2,6 +2,7 @@
 # passed to the jitted functions.
 
 import jax
+import jax.numpy as jnp
 
 import equinox as eqx
 
@@ -137,3 +138,66 @@ class Run(eqx.Module):
             "std_threshold": self.std_threshold,
             # self.cov_array,
         }
+
+
+from qdots_qll.distributions import (
+    est_mean,
+    est_cov,
+    initialize_particle_locations,
+    initialize_weights,
+)
+
+
+def initial_run_from_config(key, model, run_config_dictionary):
+    key, subkey = jax.random.split(key)
+
+    number_of_particles = run_config_dictionary["number_of_particles"]
+
+    max_iterations = run_config_dictionary["max_iterations"]
+    bnds = jnp.array(run_config_dictionary["pars_space_boundaries"])
+
+    min_iterations = run_config_dictionary["min_iterations"]
+
+    std_stop = run_config_dictionary["std_stop"]
+
+    initial_cov_array = jnp.zeros(
+        [
+            max_iterations,
+            model.number_of_parameters,
+            model.number_of_parameters,
+        ]
+    )
+    initial_times_array = jnp.zeros([max_iterations])
+    initial_particles_locations = initialize_particle_locations(
+        subkey, model.number_of_parameters, number_of_particles, bnds
+    )
+    initial_weights = initialize_weights(number_of_particles)
+    initial_cov_array = (
+        jnp.zeros(
+            [
+                max_iterations,
+                model.number_of_parameters,
+                model.number_of_parameters,
+            ]
+        )
+        .at[0]
+        .set(est_cov(initial_particles_locations, initial_weights))
+    )
+    initial_estimates_array = (
+        jnp.zeros([max_iterations, model.number_of_parameters])
+        .at[0]
+        .set(est_mean(initial_particles_locations, initial_weights))
+    )
+    return Run(
+        iteration=0,
+        key=key,
+        time=0,
+        weights=initial_weights,
+        particles_locations=initial_particles_locations,
+        cov_array=initial_cov_array,
+        estimates_array=initial_estimates_array,
+        times_array=initial_times_array,
+        max_iterations=max_iterations,  # max_iterations,
+        min_iterations=min_iterations,
+        std_threshold=std_stop,
+    )
