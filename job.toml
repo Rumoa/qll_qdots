@@ -10,7 +10,7 @@ pars_space_boundaries = [
 number_of_particles = 1000
 max_iterations = 200
 min_iterations = 100
-number_of_runs = 48
+number_of_runs = 160
 std_stop = 1e-8
 exp_design =  "random"
 

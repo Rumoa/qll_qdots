@@ -62,6 +62,9 @@ logging.info(pformat(config["run"]))
 
 no_cores = len(jax.devices())
 
+logging.info(f"Number of cores {no_cores}")
+
+
 number_of_runs = int(config["run"]["number_of_runs"] / no_cores) * no_cores
 number_of_runs_compilation = (
     int(config["run_for_compilation"]["number_of_runs"] / no_cores) * no_cores
