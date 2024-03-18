@@ -21,7 +21,7 @@ import equinox as eqx
 import functools
 from typing import Optional
 from itertools import product
-from qdots_qll.exp_design import RandomExpDesign
+from qdots_qll.exp_design import RandomExpDesign, MaxDetFimExpDesign
 from qdots_qll.run import Run, initial_run_from_config
 from qdots_qll.smc import SMCUpdater, SMC_run
 from qdots_qll.resamplers import LWResampler
@@ -88,7 +88,11 @@ key, subkey = jax.random.split(key)
 true_pars = jnp.array(config["run"]["true_parameters"])
 
 resampler = LWResampler()
-exp_design = RandomExpDesign(0.01, 40)
+# exp_design = RandomExpDesign(0.01, 40)
+logging.info(f"Time optimizer: Determinant")
+
+exp_design = MaxDetFimExpDesign(0.01, 40, 20, lr=0.5)
+
 smcupdater = SMCUpdater(
     model=model,
     exp_design=exp_design,
@@ -130,7 +134,7 @@ SMC_run_vmap_compilation = jax.pmap(
 
 
 logging.info(f"Starting compilation runs")
-SMC_run_vmap_compilation(initial_runs_compilation)
+jax.block_until_ready(SMC_run_vmap_compilation(initial_runs_compilation))
 logging.info(f"Compilation runs finished")
 
 
@@ -166,7 +170,7 @@ initial_runs = jax.pmap(
 logging.info(f"Starting Runs")
 
 
-results = SMC_run_vmap(initial_runs)
+results = jax.block_until_ready(SMC_run_vmap(initial_runs))
 logging.info(f"Runs finished")
 logging.info(f"Saving results...")
 

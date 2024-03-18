@@ -12,7 +12,7 @@ max_iterations = 20000
 min_iterations = 100
 number_of_runs = 96
 std_stop = 1e-8
-exp_design =  "random"
+exp_design =  "det fisher"
 true_parameters = [ 0.314216,  0.35833 ,  0.053851, -0.333695]
 
 

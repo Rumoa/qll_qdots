@@ -27,11 +27,11 @@ class MaxDetFimExpDesign(eqx.Module):
     sgd_iter: int
     lr: float
 
-    def __init__(self, t_min, t_max, sgd_iter, alpha, *args, **kwargs) -> None:
+    def __init__(self, t_min, t_max, sgd_iter, lr, *args, **kwargs) -> None:
         self.t_min = t_min
         self.t_max = t_max
         self.sgd_iter = sgd_iter
-        self.lr = alpha
+        self.lr = lr
 
     def utility_fun(self, model):
         return lambda *args, **kwargs: jnp.linalg.det(
