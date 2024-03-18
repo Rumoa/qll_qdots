@@ -388,6 +388,8 @@ class SMCUpdater(eqx.Module):
             key=subkey,
             particles_locations=particles_locations,
             weights=weights,
+            model=self.model,
+            initial_state=self.initial_state,
         )
         number_of_exp_re = self.number_exp_rep_matrix_shape.shape[0]
         keys = jax.random.split(key, number_of_exp_re + 1)
