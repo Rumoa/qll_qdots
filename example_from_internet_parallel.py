@@ -1,9 +1,9 @@
 import os
 import multiprocessing
 
-# os.environ["XLA_FLAGS"] = "--xla_force_host_platform_device_count={}".format(
-#     multiprocessing.cpu_count()
-# )
+os.environ["XLA_FLAGS"] = "--xla_force_host_platform_device_count={}".format(
+    multiprocessing.cpu_count()
+)
 
 # os.environ["XLA_FLAGS"] = "--xla_force_host_platform_device_count=48"
 
@@ -67,6 +67,9 @@ number_of_runs_compilation = (
     int(config["run_for_compilation"]["number_of_runs"] / no_cores) * no_cores
 )
 
+print(number_of_runs)
+print(number_of_runs_compilation)
+
 
 model = two_qdots_separable_maps(POVM_array=jnp.array(sic_povm(4)))
 
@@ -104,12 +107,10 @@ keys_for_compilation = jax.random.split(
 ).reshape(no_cores, -1, 2)
 
 initial_runs_compilation = jax.pmap(
-    jax.vmap(
-        lambda key: initial_run_from_config(
-            key,
-            model,
-            config["run_for_compilation"],
-        )
+    lambda key: initial_run_from_config(
+        key,
+        model,
+        config["run_for_compilation"],
     )
 )(keys_for_compilation)
 
@@ -119,12 +120,10 @@ stopper_for_compilation = TerminationChecker(
 )
 
 SMC_run_vmap_compilation = jax.pmap(
-    jax.vmap(
-        lambda run: SMC_run(
-            run,
-            stopper_for_compilation,
-            smcupdater,
-        )
+    lambda run: SMC_run(
+        run,
+        stopper_for_compilation,
+        smcupdater,
     )
 )
 
@@ -132,6 +131,7 @@ SMC_run_vmap_compilation = jax.pmap(
 logging.info("Starting compilation runs")
 jax.block_until_ready(SMC_run_vmap_compilation(initial_runs_compilation))
 logging.info("Compilation runs finished")
+exit()
 
 
 # ----------------------------------------------------------#
