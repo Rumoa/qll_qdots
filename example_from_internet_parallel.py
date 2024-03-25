@@ -1,26 +1,22 @@
 import os
 import multiprocessing
 
-os.environ["XLA_FLAGS"] = "--xla_force_host_platform_device_count={}".format(
-    multiprocessing.cpu_count()
-)
+# os.environ["XLA_FLAGS"] = "--xla_force_host_platform_device_count={}".format(
+#     multiprocessing.cpu_count()
+# )
 
+# os.environ["XLA_FLAGS"] = "--xla_force_host_platform_device_count=48"
+
+# os.environ["XLA_FLAGS"] = "--xla_dump_to=xla-dump"
 
 import jax
 import jax.numpy as jnp
-import numpy as np
 
-jax.config.update("jax_platform_name", "cpu")
+# jax.config.update("jax_platform_name", "cpu")
 
 
-import matplotlib.pyplot as plt
 from qbism import sic_povm
-from jaxtyping import Array, Float, Complex, Int
 import tomllib
-import equinox as eqx
-import functools
-from typing import Optional
-from itertools import product
 from qdots_qll.exp_design import RandomExpDesign, MaxDetFimExpDesign
 from qdots_qll.run import Run, initial_run_from_config
 from qdots_qll.smc import SMCUpdater, SMC_run
@@ -89,9 +85,9 @@ true_pars = jnp.array(config["run"]["true_parameters"])
 
 resampler = LWResampler()
 # exp_design = RandomExpDesign(0.01, 40)
-logging.info(f"Time optimizer: Determinant")
-
+# logging.info(f"Time optimizer: Determinant")
 exp_design = MaxDetFimExpDesign(0.01, 40, 20, lr=0.5)
+
 
 smcupdater = SMCUpdater(
     model=model,
@@ -133,9 +129,9 @@ SMC_run_vmap_compilation = jax.pmap(
 )
 
 
-logging.info(f"Starting compilation runs")
+logging.info("Starting compilation runs")
 jax.block_until_ready(SMC_run_vmap_compilation(initial_runs_compilation))
-logging.info(f"Compilation runs finished")
+logging.info("Compilation runs finished")
 
 
 # ----------------------------------------------------------#
@@ -167,13 +163,13 @@ initial_runs = jax.pmap(
     )
 )(keys)
 
-logging.info(f"Starting Runs")
+logging.info("Starting Runs")
 
 
 results = jax.block_until_ready(SMC_run_vmap(initial_runs))
-logging.info(f"Runs finished")
-logging.info(f"Saving results...")
+logging.info("Runs finished")
+logging.info("Saving results...")
 
 
 joblib.dump(results, run_filename + "_results.job")
-logging.info(f"Exiting")
+logging.info("Exiting")
