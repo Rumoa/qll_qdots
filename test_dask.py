@@ -34,23 +34,29 @@ from pprint import pformat
 with open("job.toml", "rb") as f:
     config = tomllib.load(f)
 
-seed = 1
-key = jax.random.PRNGKey(seed=seed)
 
-key, subkey = jax.random.split(key)
+number_of_runs = int(config["run"]["number_of_runs"])
+number_of_runs_compilation = int(
+    config["run_for_compilation"]["number_of_runs"]
+)
 
-subkeys = jax.random.split(subkey, 10)
+print(number_of_runs)
+print(number_of_runs_compilation)
 
 model = two_qdots_separable_maps(POVM_array=jnp.array(sic_povm(4)))
+
+seed = config["run"]["seed"]
+
+
+key = jax.random.PRNGKey(seed=seed)
+key, subkey = jax.random.split(key)
 
 
 resampler = LWResampler()
 # exp_design = RandomExpDesign(0.01, 40)
 # logging.info(f"Time optimizer: Determinant")
 exp_design = MaxDetFimExpDesign(0.01, 40, 20, lr=0.5)
-
 true_pars = jnp.array([0.314216, 0.35833, 0.053851, -0.333695])
-
 smcupdater = SMCUpdater(
     model=model,
     exp_design=exp_design,
@@ -59,6 +65,83 @@ smcupdater = SMCUpdater(
     true_pars=true_pars,
     number_exp_repetitions=1,
 )
+
+
+# ----------------------------------------------------------#
+keys_for_compilation = jax.random.split(subkey, number_of_runs_compilation)
+
+
+stopper_for_compilation = TerminationChecker(
+    config["run_for_compilation"]["max_iterations"]
+)
+f_SMC_run_compilation = lambda run: SMC_run(
+    run,
+    stopper_for_compilation,
+    smcupdater,
+)
+
+run_ex = (
+    lambda key: initial_run_from_config(
+        key,
+        model,
+        config["run_for_compilation"],
+    )
+)(keys_for_compilation[0])
+
+print("Starting compilation")
+jax.block_until_ready(f_SMC_run_compilation(run_ex))
+print("Compilation finished")
+
+
+def f_parallel_runs(key):
+    initial_run_compilation = (
+        lambda key: initial_run_from_config(
+            key,
+            model,
+            config["run"],
+        )
+    )(key)
+
+    result = f_SMC_run_compilation(initial_run_compilation)
+    return result
+
+
+with parallel_config(backend="threading", n_jobs=48):
+    result = Parallel()(
+        delayed(f_parallel_runs)(i) for i in list(keys_for_compilation)
+    )
+
+
+print(result)
+# initial_runs_compilation = jax.vmap(
+#     lambda key: initial_run_from_config(
+#         key,
+#         model,
+#         config["run_for_compilation"],
+#     )
+# )(keys_for_compilation)
+
+# print(initial_runs_compilation)
+
+# stopper_for_compilation = TerminationChecker(
+#     config["run_for_compilation"]["max_iterations"]
+# )
+
+# f_SMC_run_compilation = lambda run: SMC_run(
+#     run,
+#     stopper_for_compilation,
+#     smcupdater,
+# )
+
+
+logging.info("Starting compilation runs")
+# jax.block_until_ready(SMC_run_vmap_compilation(initial_runs_compilation))
+logging.info("Compilation runs finished")
+exit()
+
+
+# ----------------------------------------------------------#
+
 
 print(smcupdater)
 f_initial_runs = lambda key: (
