@@ -1,0 +1,16 @@
+2024-03-15 16:05:15,833 - - INFO: {'exp_design': 'random',
+ 'max_iterations': 20000,
+ 'min_iterations': 100,
+ 'number_of_particles': 2000,
+ 'number_of_runs': 120,
+ 'pars_space_boundaries': [[0.2, 0.4], [0.2, 0.4], [0.01, 0.09], [-0.2, -0.5]],
+ 'seed': 10,
+ 'std_stop': 1e-08,
+ 'true_parameters': [0.314216, 0.35833, 0.053851, -0.333695]}
+2024-03-15 16:05:15,834 - - INFO: Number of cores 96
+2024-03-15 16:05:16,776 - - INFO: Starting compilation runs
+2024-03-15 16:05:18,047 - - INFO: Compilation runs finished
+2024-03-15 16:05:19,316 - - INFO: Starting Runs
+2024-03-15 18:46:46,595 - - INFO: Runs finished
+2024-03-15 18:46:46,672 - - INFO: Saving results...
+2024-03-15 18:46:47,550 - - INFO: Exiting

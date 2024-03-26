@@ -91,3 +91,5 @@ def populate_one_axis(key, bnds, no_particles):
 def initialize_weights(no_of_particles):
     N = no_of_particles
     return jnp.ones(N) / N
+
+
