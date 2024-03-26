@@ -145,6 +145,7 @@ from qdots_qll.distributions import (
     est_cov,
     initialize_particle_locations,
     initialize_weights,
+    initialize_particle_locations_normal_prior,
 )
 
 
@@ -168,9 +169,17 @@ def initial_run_from_config(key, model, run_config_dictionary):
         ]
     )
     initial_times_array = jnp.zeros([max_iterations])
-    initial_particles_locations = initialize_particle_locations(
-        subkey, model.number_of_parameters, number_of_particles, bnds
-    )
+    # initial_particles_locations = initialize_particle_locations(
+    #     subkey, model.number_of_parameters, number_of_particles, bnds
+    # )  # this is the one we are gonna change now for priors
+
+    initial_particles_locations = initialize_particle_locations_normal_prior(
+        subkey,
+        number_of_particles,
+        bnds,
+        sigmas=run_config_dictionary["sigmas_prior"],
+    )  # this is the one we are gonna change now for priors
+
     initial_weights = initialize_weights(number_of_particles)
     initial_cov_array = (
         jnp.zeros(

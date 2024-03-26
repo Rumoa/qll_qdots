@@ -82,6 +82,16 @@ def initialize_particle_locations(
     ).T
 
 
+def initialize_particle_locations_normal_prior(
+    subkey, no_of_particles, boundaries, sigmas=5
+):
+    covs = jnp.diagflat(jnp.std(boundaries, axis=1) / sigmas) ** 2
+    mus = jnp.mean(boundaries, axis=1)
+    return jax.random.multivariate_normal(
+        subkey, mean=mus, cov=covs, shape=(no_of_particles,)
+    )
+
+
 def populate_one_axis(key, bnds, no_particles):
     return jax.random.uniform(
         key, minval=jnp.min(bnds), maxval=jnp.max(bnds), shape=[no_particles]
@@ -91,5 +101,3 @@ def populate_one_axis(key, bnds, no_particles):
 def initialize_weights(no_of_particles):
     N = no_of_particles
     return jnp.ones(N) / N
-
-

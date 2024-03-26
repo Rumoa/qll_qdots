@@ -6,7 +6,7 @@ pars_space_boundaries = [
         [0.001, 0.22],
         [-0.01, -0.9],
     ]
-
+sigmas_prior = 5
 number_of_particles = 2000
 max_iterations = 20000
 min_iterations = 100
