@@ -1,6 +1,9 @@
 import os
 import multiprocessing
 
+os.environ["XLA_FLAGS"] = "--xla_force_host_platform_device_count={}".format(
+    multiprocessing.cpu_count()
+)
 
 import jax
 import jax.numpy as jnp
@@ -44,6 +47,8 @@ logging.basicConfig(
 
 with open("job.toml", "rb") as f:
     config = tomllib.load(f)
+
+logging.info(pformat(config["run"]))
 
 
 number_of_runs = config["run"]["number_of_runs"]
@@ -96,6 +101,14 @@ initial_runs_compilation = jax.vmap(
 )(keys_for_compilation)
 
 
+example_run = (
+    lambda key: initial_run_from_config(
+        key,
+        model,
+        config["run_for_compilation"],
+    )
+)(keys_for_compilation[0])
+
 stopper_for_compilation = TerminationChecker(
     config["run_for_compilation"]["max_iterations"]
 )
@@ -111,7 +124,7 @@ jax.block_until_ready(
             stopper_for_compilation,
             smcupdater,
         )
-    )(initial_runs_compilation[0])
+    )(example_run)
 )
 
 logging.info("Single compilation run finished")
