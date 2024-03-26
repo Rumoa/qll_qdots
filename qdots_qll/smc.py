@@ -422,7 +422,7 @@ class SMCUpdater(eqx.Module):
             # self.cov_array,
         }
 
-    @jit
+    # @jit
     def _step_force_resampling(self, run_obj):
 
         updated_variables_bf_resampling = self._iteration_smc_new_weights(
@@ -459,7 +459,7 @@ class SMCUpdater(eqx.Module):
             }
         )
 
-    @jit
+    # @jit
     def step(self, run_obj):
 
         updated_variables_bf_resampling = self._iteration_smc_new_weights(

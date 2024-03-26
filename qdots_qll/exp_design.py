@@ -33,10 +33,34 @@ class MaxDetFimExpDesign(eqx.Module):
         self.sgd_iter = sgd_iter
         self.lr = lr
 
+    # @jit
     def utility_fun(self, model):
         return lambda *args, **kwargs: jnp.linalg.det(
             model.fim(*args, **kwargs)
         )
+
+    # @jit
+    # def optimize_utility_function(
+    #     self, t, particle, model, initial_state, **kwargs
+    # ):
+    #     def grad_f(t):
+    #         return -jax.grad(self.utility_fun(model), 1)(
+    #             particle, t, initial_state
+    #         )
+
+    #     # grad_f = lambda t: -jax.grad(self.utility_fun(model), 1)(
+    #     #     particle, t, initial_state
+    #     # )
+
+    #     solver = optax.adam(learning_rate=self.lr)
+    #     params = t
+    #     opt_state = solver.init(params)
+
+    #     for _ in range(10):
+    #         grad = grad_f(params)
+    #         updates, opt_state = solver.update(grad, opt_state, params)
+    #         params = optax.apply_updates(params, updates)
+    #     return params
 
     @jit
     def optimize_utility_function(
@@ -47,6 +71,13 @@ class MaxDetFimExpDesign(eqx.Module):
                 particle, t, initial_state
             )
 
+        def f_for_scan(carry, x):
+            params, opt_state = carry
+            grad = grad_f(params)
+            updates, opt_state = solver.update(grad, opt_state, params)
+            params = optax.apply_updates(params, updates)
+            return [params, opt_state], params
+
         # grad_f = lambda t: -jax.grad(self.utility_fun(model), 1)(
         #     particle, t, initial_state
         # )
@@ -55,11 +86,8 @@ class MaxDetFimExpDesign(eqx.Module):
         params = t
         opt_state = solver.init(params)
 
-        for _ in range(10):
-            grad = grad_f(params)
-            updates, opt_state = solver.update(grad, opt_state, params)
-            params = optax.apply_updates(params, updates)
-        return params
+        re = jax.lax.scan(f_for_scan, [params, opt_state], None, length=20)
+        return re[0][0]
 
     @jit
     def generate_time(
