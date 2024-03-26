@@ -11,7 +11,11 @@ import jax.numpy as jnp
 
 from qbism import sic_povm
 import tomllib
-from qdots_qll.exp_design import RandomExpDesign, MaxDetFimExpDesign
+from qdots_qll.exp_design import (
+    RandomExpDesign,
+    MaxDetFimExpDesign,
+    MaxTraceFimExpDesign,
+)
 from qdots_qll.run import Run, initial_run_from_config
 from qdots_qll.smc import SMCUpdater, SMC_run
 from qdots_qll.resamplers import LWResampler
@@ -75,8 +79,10 @@ true_pars = jnp.array(config["run"]["true_parameters"])
 
 resampler = LWResampler()
 # exp_design = RandomExpDesign(0.01, 40)
+
+
 # logging.info(f"Time optimizer: Determinant")
-exp_design = MaxDetFimExpDesign(0.01, 40, 20, lr=0.5)
+exp_design = MaxTraceFimExpDesign(0.01, 40, 20, lr=0.5)
 
 
 smcupdater = SMCUpdater(
