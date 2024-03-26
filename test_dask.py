@@ -70,17 +70,25 @@ smcupdater = SMCUpdater(
 # ----------------------------------------------------------#
 keys_for_compilation = jax.random.split(subkey, number_of_runs_compilation)
 
+key, subkey = jax.random.split(key)
+
+keys_for_runs = jax.random.split(subkey, number_of_runs)
+
 
 stopper_for_compilation = TerminationChecker(
     config["run_for_compilation"]["max_iterations"]
 )
+
+stopper_for_runs = TerminationChecker(config["run"]["max_iterations"])
+
+
 f_SMC_run_compilation = lambda run: SMC_run(
     run,
     stopper_for_compilation,
     smcupdater,
 )
 
-run_ex = (
+run_example = (
     lambda key: initial_run_from_config(
         key,
         model,
@@ -89,12 +97,12 @@ run_ex = (
 )(keys_for_compilation[0])
 
 print("Starting compilation")
-jax.block_until_ready(f_SMC_run_compilation(run_ex))
+jax.block_until_ready(f_SMC_run_compilation(run_example))
 print("Compilation finished")
 
 
 def f_parallel_runs(key):
-    initial_run_compilation = (
+    run = (
         lambda key: initial_run_from_config(
             key,
             model,
@@ -102,17 +110,24 @@ def f_parallel_runs(key):
         )
     )(key)
 
-    result = f_SMC_run_compilation(initial_run_compilation)
+    result = (
+        lambda run: SMC_run(
+            run,
+            stopper_for_runs,
+            smcupdater,
+        )
+    )(run)
     return result
 
 
-with parallel_config(backend="threading", n_jobs=48):
+with parallel_config(backend="threading", n_jobs=80):
     result = Parallel()(
-        delayed(f_parallel_runs)(i) for i in list(keys_for_compilation)
+        delayed(f_parallel_runs)(i) for i in list(keys_for_runs)
     )
 
 
 print(result)
+exit()
 # initial_runs_compilation = jax.vmap(
 #     lambda key: initial_run_from_config(
 #         key,
