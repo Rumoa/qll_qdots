@@ -141,7 +141,43 @@ SMC_run_vmap_compilation = jax.vmap(
 logging.info("Starting compilation runs")
 jax.block_until_ready(SMC_run_vmap_compilation(initial_runs_compilation))
 logging.info("Compilation runs finished")
-exit()
+# exit()
 
 
 # ----------------------------------------------------------#
+
+key, subkey = jax.random.split(key)
+
+keys = jax.random.split(subkey, number_of_runs)
+
+stopper = TerminationChecker(config["run"]["max_iterations"])
+
+
+SMC_run_vmap = jax.vmap(
+    lambda run: SMC_run(
+        run,
+        stopper,
+        smcupdater,
+    )
+)
+
+initial_runs = (
+    jax.vmap(
+        lambda key: initial_run_from_config(
+            key,
+            model,
+            config["run"],
+        )
+    )
+)(keys)
+
+logging.info("Starting Runs")
+
+
+results = jax.block_until_ready(SMC_run_vmap(initial_runs))
+logging.info("Runs finished")
+logging.info("Saving results...")
+
+
+joblib.dump(results, run_filename + "_results.job")
+logging.info("Exiting")
