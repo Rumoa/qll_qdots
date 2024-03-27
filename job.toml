@@ -6,13 +6,13 @@ pars_space_boundaries = [
         [0.001, 0.22],
         [-0.01, -0.9],
     ]
-sigmas_prior = 5
+sigmas_prior = 3
 number_of_particles = 2000
 max_iterations = 20000
 min_iterations = 100
-number_of_runs = 96
+number_of_runs = 50
 std_stop = 1e-8
-exp_design =  "det"
+exp_design =  "random"
 true_parameters = [ 0.314216,  0.35833 ,  0.053851, -0.333695]
 
 
@@ -36,7 +36,7 @@ pars_space_boundaries = [
         [0.01, 0.09],
         [-0.2, -0.5],
     ]
-
+sigmas_prior = 5
 number_of_particles = 100
 max_iterations = 5
 min_iterations = 1

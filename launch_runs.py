@@ -1,9 +1,9 @@
 import os
 import multiprocessing
 
-os.environ["XLA_FLAGS"] = "--xla_force_host_platform_device_count={}".format(
-    multiprocessing.cpu_count()
-)
+# os.environ["XLA_FLAGS"] = "--xla_force_host_platform_device_count={}".format(
+#     multiprocessing.cpu_count()
+# )
 
 import jax
 import jax.numpy as jnp
@@ -37,6 +37,15 @@ from datetime import datetime
 from qdots_qll.utils.generate_initial_state import max_entangled_dm_vec
 from pprint import pformat
 
+import argparse
+
+parser = argparse.ArgumentParser()
+
+parser.add_argument("--config", help="Config file of the job", dest="config")
+args = parser.parse_args()
+
+configfilename = args.config
+
 
 init_time = datetime.today().strftime("%Y-%m-%d_%H:%M:%S")
 run_filename = "results/run_" + init_time
@@ -49,8 +58,9 @@ logging.basicConfig(
 )
 
 
-with open("job.toml", "rb") as f:
+with open(configfilename, "rb") as f:
     config = tomllib.load(f)
+
 
 logging.info(pformat(config["run"]))
 
@@ -77,13 +87,17 @@ key, subkey = jax.random.split(key)
 # keys = jax.random.split(key, number_of_runs)
 true_pars = jnp.array(config["run"]["true_parameters"])
 
+
+exp_design_dict = {
+    "random": RandomExpDesign(0.01, 40),
+    "maxdetfim": MaxDetFimExpDesign(0.01, 40, 20, lr=0.5),
+    "maxtracefim": MaxTraceFimExpDesign(0.01, 40, 20, lr=0.5),
+}
+
+exp_design = exp_design_dict[config["run"]["exp_design"]]
+
+
 resampler = LWResampler()
-
-
-# logging.info(f"Time optimizer: Determinant")
-# exp_design = RandomExpDesign(0.01, 40)
-# exp_design = MaxDetFimExpDesign(0.01, 40, 20, lr=0.5)
-exp_design = MaxTraceFimExpDesign(0.01, 40, 20, lr=0.5)
 
 
 smcupdater = SMCUpdater(
