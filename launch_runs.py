@@ -78,10 +78,11 @@ key, subkey = jax.random.split(key)
 true_pars = jnp.array(config["run"]["true_parameters"])
 
 resampler = LWResampler()
-# exp_design = RandomExpDesign(0.01, 40)
 
 
 # logging.info(f"Time optimizer: Determinant")
+# exp_design = RandomExpDesign(0.01, 40)
+# exp_design = MaxDetFimExpDesign(0.01, 40, 20, lr=0.5)
 exp_design = MaxTraceFimExpDesign(0.01, 40, 20, lr=0.5)
 
 
