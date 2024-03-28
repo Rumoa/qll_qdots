@@ -125,7 +125,7 @@ initial_runs = (
 n = config["run"]["max_iterations"]
 
 
-@loop_tqdm(n)
+@loop_tqdm(n, print_rate=25)
 def f_fori(i, r_obj):
     r_obj = smcupdater.step(r_obj)
     return r_obj
