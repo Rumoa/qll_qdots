@@ -1,15 +1,13 @@
 import os
 import multiprocessing
 
-# os.environ["XLA_FLAGS"] = "--xla_force_host_platform_device_count={}".format(
-#     multiprocessing.cpu_count()
-# )
-
+from qdots_qll.utils.povms import sigmas_povm
 import jax
+import numpy as np
 import jax.numpy as jnp
+import qutip as qt
 
 
-from qbism import sic_povm
 import tomllib
 from qdots_qll.exp_design import (
     RandomExpDesign,
@@ -21,7 +19,6 @@ from qdots_qll.smc import SMCUpdater, SMC_run
 from qdots_qll.resamplers import LWResampler
 from qdots_qll.stop_conditions import TerminationChecker
 
-# from qdots_qll.models.game import true_pars
 from qdots_qll.distributions import (
     est_cov,
     est_mean,
@@ -29,14 +26,17 @@ from qdots_qll.distributions import (
     initialize_weights,
 )
 from qdots_qll.models.models_scratch_for_drafting import (
-    two_qdots_separable_maps,
+    SingleQDot3Params,
 )
 import joblib
 import logging
 from datetime import datetime
 from qdots_qll.utils.generate_initial_state import max_entangled_dm_vec
-from pprint import pformat
+from pprint import pformat, pprint
 import argparse
+from jax_tqdm import loop_tqdm
+import matplotlib.pyplot as plt
+
 
 parser = argparse.ArgumentParser()
 
@@ -67,11 +67,10 @@ logging.info(pformat(config["run"]))
 number_of_runs = config["run"]["number_of_runs"]
 number_of_runs_compilation = config["run_for_compilation"]["number_of_runs"]
 
-print(number_of_runs)
-print(number_of_runs_compilation)
 
+ground_state_qdot = jnp.array(qt.ket2dm(qt.basis(2, 0))).flatten()
+model = SingleQDot3Params(POVM_array=jnp.array(sigmas_povm))
 
-model = two_qdots_separable_maps(POVM_array=jnp.array(sic_povm(4)))
 
 seed = config["run"]["seed"]
 
@@ -103,83 +102,15 @@ smcupdater = SMCUpdater(
     model=model,
     exp_design=exp_design,
     resampler=resampler,
-    initial_state=max_entangled_dm_vec,
+    initial_state=ground_state_qdot,
     true_pars=true_pars,
     number_exp_repetitions=1,
 )
 
-
-# ----------------------------------------------------------#
-keys_for_compilation = jax.random.split(subkey, number_of_runs_compilation)
-
-initial_runs_compilation = jax.vmap(
-    lambda key: initial_run_from_config(
-        key,
-        model,
-        config["run_for_compilation"],
-    )
-)(keys_for_compilation)
-
-
-example_run = (
-    lambda key: initial_run_from_config(
-        key,
-        model,
-        config["run_for_compilation"],
-    )
-)(keys_for_compilation[0])
-
-stopper_for_compilation = TerminationChecker(
-    config["run_for_compilation"]["max_iterations"]
-)
-# run one to compile SMC_run
-
-
-logging.info("Starting compilation of one run")
-
-jax.block_until_ready(
-    (
-        lambda run: SMC_run(
-            run,
-            stopper_for_compilation,
-            smcupdater,
-        )
-    )(example_run)
-)
-
-logging.info("Single compilation run finished")
-
-SMC_run_vmap_compilation = jax.vmap(
-    lambda run: SMC_run(
-        run,
-        stopper_for_compilation,
-        smcupdater,
-    )
-)
-
-
-logging.info("Starting compilation runs")
-jax.block_until_ready(SMC_run_vmap_compilation(initial_runs_compilation))
-logging.info("Compilation runs finished")
-# exit()
-
-
-# ----------------------------------------------------------#
-
-key, subkey = jax.random.split(key)
-
-keys = jax.random.split(subkey, number_of_runs)
-
 stopper = TerminationChecker(config["run"]["max_iterations"])
 
 
-SMC_run_vmap = jax.vmap(
-    lambda run: SMC_run(
-        run,
-        stopper,
-        smcupdater,
-    )
-)
+keys = jax.random.split(subkey, number_of_runs)
 
 initial_runs = (
     jax.vmap(
@@ -191,13 +122,21 @@ initial_runs = (
     )
 )(keys)
 
+n = config["run"]["max_iterations"]
+
+
+@loop_tqdm(n)
+def f_fori(i, r_obj):
+    r_obj = smcupdater.step(r_obj)
+    return r_obj
+
+
 logging.info("Starting Runs")
 
 
-results = jax.block_until_ready(SMC_run_vmap(initial_runs))
-logging.info("Runs finished")
-logging.info("Saving results...")
-
+results = jax.vmap(lambda run_0: jax.lax.fori_loop(0, n, f_fori, run_0))(
+    initial_runs
+)
 
 joblib.dump(results, run_filename + "_results.job")
 logging.info("Exiting")
