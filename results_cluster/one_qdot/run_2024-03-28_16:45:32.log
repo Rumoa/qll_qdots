@@ -1,0 +1,12 @@
+2024-03-28 16:45:32,331 - - INFO: {'exp_design': 'maxtracefim',
+ 'max_iterations': 10000,
+ 'min_iterations': 100,
+ 'number_of_particles': 500,
+ 'number_of_runs': 20,
+ 'pars_space_boundaries': [[0.01, 0.9], [0.001, 0.22], [-0.01, -0.9]],
+ 'seed': 10,
+ 'sigmas_prior': 5,
+ 'std_stop': 1e-08,
+ 'true_parameters': [0.35833, 0.053851, -0.333695]}
+2024-03-28 16:45:34,408 - - INFO: Starting Runs
+2024-03-28 18:56:32,802 - - INFO: Exiting
