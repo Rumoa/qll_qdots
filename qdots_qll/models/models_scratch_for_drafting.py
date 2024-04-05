@@ -900,6 +900,9 @@ class two_qdots_identity_for_systemB(base_class_dimension):
         # we will apply both exp(L) to each qubit, carefully.
         # Remember the liouvillian is only for one dot
 
+        def vec(A):
+            return A.flatten()
+
         map_A = expm(t * liouvillian)
 
         total_map_superop = jnp.kron(
