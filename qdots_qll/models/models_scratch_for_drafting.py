@@ -29,7 +29,7 @@ def dag(A):
     return jnp.conjugate(A.T)
 
 
-class base_class_dimension(eqx.Module):
+class BaseClassDimension(eqx.Module):
     d: int
     matrix_d: Float[Array, "d d"]
     positive_eps: Float
@@ -89,7 +89,7 @@ def compute_P_matrix_ver(
     return check_nan(jnp.real(jnp.trace(evolved_state @ POVM_element)))
 
 
-class single_qdot(base_class_dimension):
+class single_qdot(BaseClassDimension):
     number_of_parameters: int
     delta: float
     Omega: float
@@ -273,7 +273,7 @@ class single_qdot(base_class_dimension):
         return qfim
 
 
-class SingleQDot3Params(base_class_dimension):
+class SingleQDot3Params(BaseClassDimension):
     number_of_parameters: int
     delta: float
     Omega: float
@@ -483,7 +483,7 @@ def compute_P_matrix_ver(
     return check_nan(jnp.real(jnp.trace(evolved_state @ POVM_element)))
 
 
-class two_qdots_separable_maps(base_class_dimension):
+class two_qdots_separable_maps(BaseClassDimension):
     number_of_parameters: int
     delta: float
     Omega: float
@@ -824,7 +824,7 @@ class two_qdots_separable_maps(base_class_dimension):
         return sld
 
 
-class two_qdots_identity_for_systemB(base_class_dimension):
+class two_qdots_identity_for_systemB(BaseClassDimension):
     number_of_parameters: int
     delta: float
     Omega: float
