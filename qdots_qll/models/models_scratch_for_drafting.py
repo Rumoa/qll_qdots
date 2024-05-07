@@ -42,6 +42,9 @@ class BaseClassDimension(eqx.Module):
         self.matrix_d = jnp.ones([self.d, self.d])
         self.positive_eps = 1e-8
 
+    def dag(self, A):
+        return jnp.conjugate(A.T)
+
     @jit
     def vec(self, rho: Complex[Array, "d d"]) -> Complex[Array, "d**2"]:
         return rho.flatten()
@@ -64,9 +67,7 @@ class BaseClassDimension(eqx.Module):
         return self.sprepost(jnp.identity(d), A)
 
 
-check_nan = jax.jit(
-    lambda a: jax.lax.cond(jnp.isnan(a), lambda a: 0.0, lambda a: a, a)
-)
+check_nan = jax.jit(lambda a: jax.lax.cond(jnp.isnan(a), lambda a: 0.0, lambda a: a, a))
 
 
 @jit
@@ -75,9 +76,7 @@ def compute_P_superop(
     POVM_element_vec: Complex[Array, "d**2"],
 ):
 
-    return check_nan(
-        jnp.real(jnp.dot(dag(POVM_element_vec), evolved_state_vec))
-    )
+    return check_nan(jnp.real(jnp.dot(dag(POVM_element_vec), evolved_state_vec)))
 
 
 @jit
@@ -186,15 +185,11 @@ class single_qdot(BaseClassDimension):
     ) -> Float[Array, "number_of_parameters number_of_parameters"]:
         p_array = self.likelihood_particle(particle, t, initial_state)
 
-        jacobian = jax.jacobian(self.likelihood_particle, 0)(
-            particle, t, initial_state
-        )
+        jacobian = jax.jacobian(self.likelihood_particle, 0)(particle, t, initial_state)
 
         example_zero_matrix = jnp.zeros([particle.shape[0], particle.shape[0]])
 
-        fim_element = jax.vmap(lambda x, p: jnp.outer(x, x) / p)(
-            jacobian, p_array
-        )
+        fim_element = jax.vmap(lambda x, p: jnp.outer(x, x) / p)(jacobian, p_array)
         return jnp.where(~jnp.isinf(fim_element), fim_element, 0).sum(axis=0)
 
     @jit
@@ -205,14 +200,10 @@ class single_qdot(BaseClassDimension):
         t: Float,
         initial_state: Complex[Array, "d**2"],
     ) -> Int[Array, "1"]:
-        probabilities = self.likelihood_particle(
-            true_particle, t, initial_state
-        )
+        probabilities = self.likelihood_particle(true_particle, t, initial_state)
         probabilities = probabilities / probabilities.sum()
         no_of_outcomes = self.POVM_arr.shape[0]
-        outcome = jax.random.choice(
-            key, a=jnp.arange(no_of_outcomes), p=probabilities
-        )
+        outcome = jax.random.choice(key, a=jnp.arange(no_of_outcomes), p=probabilities)
         return outcome
 
     @jit
@@ -376,15 +367,11 @@ class SingleQDot3Params(BaseClassDimension):
     ) -> Float[Array, "number_of_parameters number_of_parameters"]:
         p_array = self.likelihood_particle(particle, t, initial_state)
 
-        jacobian = jax.jacobian(self.likelihood_particle, 0)(
-            particle, t, initial_state
-        )
+        jacobian = jax.jacobian(self.likelihood_particle, 0)(particle, t, initial_state)
 
         example_zero_matrix = jnp.zeros([particle.shape[0], particle.shape[0]])
 
-        fim_element = jax.vmap(lambda x, p: jnp.outer(x, x) / p)(
-            jacobian, p_array
-        )
+        fim_element = jax.vmap(lambda x, p: jnp.outer(x, x) / p)(jacobian, p_array)
         return jnp.where(~jnp.isinf(fim_element), fim_element, 0).sum(axis=0)
 
     @jit
@@ -395,14 +382,10 @@ class SingleQDot3Params(BaseClassDimension):
         t: Float,
         initial_state: Complex[Array, "d**2"],
     ) -> Int[Array, "1"]:
-        probabilities = self.likelihood_particle(
-            true_particle, t, initial_state
-        )
+        probabilities = self.likelihood_particle(true_particle, t, initial_state)
         probabilities = probabilities / probabilities.sum()
         no_of_outcomes = self.POVM_arr.shape[0]
-        outcome = jax.random.choice(
-            key, a=jnp.arange(no_of_outcomes), p=probabilities
-        )
+        outcome = jax.random.choice(key, a=jnp.arange(no_of_outcomes), p=probabilities)
         return outcome
 
     @jit
@@ -469,9 +452,7 @@ def compute_P_superop(
     POVM_element_vec: Complex[Array, "d**2"],
 ):
 
-    return check_nan(
-        jnp.real(jnp.dot(dag(POVM_element_vec), evolved_state_vec))
-    )
+    return check_nan(jnp.real(jnp.dot(dag(POVM_element_vec), evolved_state_vec)))
 
 
 @jit
@@ -498,9 +479,7 @@ class two_qdots_separable_maps(BaseClassDimension):
         self.number_of_parameters = 4
         self.delta = 0.12739334807998307
         self.Omega = 0.5
-        self.one_dot_system_hamiltonian = (
-            self.make_one_dot_system_hamiltonian()
-        )
+        self.one_dot_system_hamiltonian = self.make_one_dot_system_hamiltonian()
         self.A = jnp.array([[1, 0], [0, 0]])
         self.POVM_arr = POVM_array
         self.basis_elements = jnp.identity(4)
@@ -562,9 +541,7 @@ class two_qdots_separable_maps(BaseClassDimension):
         map_A = expm(t * liouvillian)
         map_B = map_A
 
-        total_map_superop = jnp.kron(
-            map_A, map_B
-        )  # this now is a superop in 16x16
+        total_map_superop = jnp.kron(map_A, map_B)  # this now is a superop in 16x16
 
         # Now the initial state needs to be reshape to 2, 2, 2, 2
         # swap the 2nd and 3d index.
@@ -577,9 +554,7 @@ class two_qdots_separable_maps(BaseClassDimension):
             (
                 total_map_superop
                 @ self.vec(
-                    initial_state.reshape([2, 2, 2, 2])
-                    .swapaxes(1, 2)
-                    .reshape([4, 4])
+                    initial_state.reshape([2, 2, 2, 2]).swapaxes(1, 2).reshape([4, 4])
                 )
             )
             .reshape([2, 2, 2, 2])
@@ -653,15 +628,11 @@ class two_qdots_separable_maps(BaseClassDimension):
     ) -> Float[Array, "number_of_parameters number_of_parameters"]:
         p_array = self.likelihood_particle(particle, t, initial_state)
 
-        jacobian = jax.jacobian(self.likelihood_particle, 0)(
-            particle, t, initial_state
-        )
+        jacobian = jax.jacobian(self.likelihood_particle, 0)(particle, t, initial_state)
 
         # example_zero_matrix = jnp.zeros([particle.shape[0], particle.shape[0]])
 
-        fim_element = jax.vmap(lambda x, p: jnp.outer(x, x) / p)(
-            jacobian, p_array
-        )
+        fim_element = jax.vmap(lambda x, p: jnp.outer(x, x) / p)(jacobian, p_array)
         return jnp.where(~jnp.isinf(fim_element), fim_element, 0).sum(axis=0)
 
     @jit
@@ -672,14 +643,10 @@ class two_qdots_separable_maps(BaseClassDimension):
         t: Float,
         initial_state: Complex[Array, "d**2"],
     ) -> Int[Array, "1"]:
-        probabilities = self.likelihood_particle(
-            true_particle, t, initial_state
-        )
+        probabilities = self.likelihood_particle(true_particle, t, initial_state)
         probabilities = probabilities / probabilities.sum()
         no_of_outcomes = self.POVM_arr.shape[0]
-        outcome = jax.random.choice(
-            key, a=jnp.arange(no_of_outcomes), p=probabilities
-        )
+        outcome = jax.random.choice(key, a=jnp.arange(no_of_outcomes), p=probabilities)
         return outcome
 
     @jit
@@ -839,9 +806,7 @@ class two_qdots_identity_for_systemB(BaseClassDimension):
         self.number_of_parameters = 4
         self.delta = 0.12739334807998307
         self.Omega = 0.5
-        self.one_dot_system_hamiltonian = (
-            self.make_one_dot_system_hamiltonian()
-        )
+        self.one_dot_system_hamiltonian = self.make_one_dot_system_hamiltonian()
         self.A = jnp.array([[1, 0], [0, 0]])
         self.POVM_arr = POVM_array
         self.basis_elements = jnp.identity(4)
@@ -920,9 +885,7 @@ class two_qdots_identity_for_systemB(BaseClassDimension):
             (
                 total_map_superop
                 @ vec(
-                    initial_state.reshape([2, 2, 2, 2])
-                    .swapaxes(1, 2)
-                    .reshape([4, 4])
+                    initial_state.reshape([2, 2, 2, 2]).swapaxes(1, 2).reshape([4, 4])
                 )
             )
             .reshape([2, 2, 2, 2])
@@ -958,15 +921,11 @@ class two_qdots_identity_for_systemB(BaseClassDimension):
     ) -> Float[Array, "number_of_parameters number_of_parameters"]:
         p_array = self.likelihood_particle(particle, t, initial_state)
 
-        jacobian = jax.jacobian(self.likelihood_particle, 0)(
-            particle, t, initial_state
-        )
+        jacobian = jax.jacobian(self.likelihood_particle, 0)(particle, t, initial_state)
 
         example_zero_matrix = jnp.zeros([particle.shape[0], particle.shape[0]])
 
-        fim_element = jax.vmap(lambda x, p: jnp.outer(x, x) / p)(
-            jacobian, p_array
-        )
+        fim_element = jax.vmap(lambda x, p: jnp.outer(x, x) / p)(jacobian, p_array)
         return jnp.where(~jnp.isinf(fim_element), fim_element, 0).sum(axis=0)
 
     @jit
@@ -977,14 +936,10 @@ class two_qdots_identity_for_systemB(BaseClassDimension):
         t: Float,
         initial_state: Complex[Array, "d**2"],
     ) -> Int[Array, "1"]:
-        probabilities = self.likelihood_particle(
-            true_particle, t, initial_state
-        )
+        probabilities = self.likelihood_particle(true_particle, t, initial_state)
         probabilities = probabilities / probabilities.sum()
         no_of_outcomes = self.POVM_arr.shape[0]
-        outcome = jax.random.choice(
-            key, a=jnp.arange(no_of_outcomes), p=probabilities
-        )
+        outcome = jax.random.choice(key, a=jnp.arange(no_of_outcomes), p=probabilities)
         return outcome
 
     @jit

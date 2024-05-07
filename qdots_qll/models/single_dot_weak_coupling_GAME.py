@@ -1,0 +1,189 @@
+from qdots_qll.models.models_scratch_for_drafting import BaseClassDimension
+import jax
+import jax.numpy as jnp
+import numpy as np
+import qutip as qt
+
+from jax.scipy import expm
+
+from jax import jit
+
+
+from jaxtyping import Array, Float, Complex, Int, Real
+
+# These parameters are related to the ones used in the paper:
+# [1] A. Nazir and D. P. S. McCutcheon, Modelling Exciton-Phonon Interactions
+# in Optically Driven Quantum Dots, J. Phys.: Condens. Matter 28, 103002 (2016).
+# in the weak coupling regime (FIG. 1). Since we use the GAME master equation,
+# we need to double the decay rates to match the same behaviour.
+
+
+def rho_to_bloch(rho):
+    return jnp.einsum("ijk,kj-> i", _G, rho).real
+
+
+def bloch_to_rho(bloch_v):
+    return jnp.einsum("jkl, j", _G, bloch_v)
+
+
+gamma_minus = 0.15710846160566203
+gamma_plus = 0.17916503425352892
+S_minus = 0.053851494081252074
+S_plus = -0.3336948226536299
+
+true_parameters = jnp.array([2 * gamma_minus, 2 * gamma_plus, S_minus, S_plus])
+
+
+_G = jnp.array(
+    [
+        jnp.array(
+            [[1, 0], [0, 1]],
+        ),
+        jnp.array(
+            [[0, 1], [1, 0]],
+        ),
+        jnp.array(
+            [[0, -1j], [1j, 0]],
+        ),
+        jnp.array(
+            [[1, 0], [0, -1]],
+        ),
+    ]
+) / jnp.sqrt(2)
+
+
+canonical_povm = (
+    jnp.array(
+        [
+            qt.identity(2) + qt.sigmax(),
+            qt.identity(2) - qt.sigmax(),
+            qt.identity(2) + qt.sigmay(),
+            qt.identity(2) - qt.sigmay(),
+            qt.identity(2) + qt.sigmaz(),
+            qt.identity(2) - qt.sigmaz(),
+        ]
+    )
+    / 2
+).reshape(-1, 2, 2, 2)
+
+
+zero = qt.basis(2, 0)
+one = qt.basis(2, 1)
+plus = (qt.basis(2, 0) + qt.basis(2, 1)).unit()
+minus = (qt.basis(2, 0) + 1j * qt.basis(2, 1)).unit()
+
+initial_states = [zero, one, plus, minus]
+
+initial_states_dm = jnp.array([qt.ket2dm(i) for i in initial_states])
+
+initial_states_bloch = jax.vmap(rho_to_bloch)(initial_states_dm)
+
+
+class SingleDotWeakCouplingGAME(BaseClassDimension):
+    number_of_parameters: int
+    delta: float
+    Omega: float
+    T: float
+    POVM_arr: Complex[Array, "no_basis no_outcomes d d"]
+    initial_states_bloch: Float[Array, "no_initial_states d"]
+    basis_elements: jax.Array
+    trace_povm_G: Float[Array, "no_outcomes d"]
+
+    def __init__(self):
+        super().__init__(dimension=2)
+        self.number_of_parameters = 4
+        self.delta = 0.12739334807998307
+        self.Omega = 0.5
+        self.T = 30
+        self.POVM_arr = canonical_povm
+        self.basis_elements = jnp.identity(4)
+        self.initial_states_bloch = initial_states_bloch
+        self.trace_povm_G = jnp.einsum("ijkm,lmk", self.POVM_arr, _G).real
+
+    def make_bloch_matrix(self, particle):
+        gn, gp, Sn, Sp = particle
+        gnot = 1e-9
+        Snot = -self.delta
+        # system_hamiltonian = self.delta * jnp.array([[1, 0], [0, -1]]) / 2 + self.Omega * jnp.array(
+        #     [[0, 1], [1, 0]]) / 2
+        system_hamiltonian = (
+            self.delta * jnp.array([[1, 0], [0, 0]])
+            + self.Omega * jnp.array([[0, 1], [1, 0]]) / 2
+        )
+
+        # A = jnp.array([[1, 0], [0, -1]])/2
+        A = jnp.array([[1, 0], [0, 0]])
+
+        U = jnp.linalg.eigh(system_hamiltonian)[1]
+
+        Aij = U @ A @ self.dag(U)
+
+        Cp = 0.5 * gp + 1j * Sp
+        Cn = 0.5 * gn + 1j * Sn
+        Cnot = 0.5 * gnot + 1j * Snot
+        Gamma = jnp.array([[Cnot, Cn], [Cp, Cnot]])
+
+        sqrtgamma = jnp.sqrt(jnp.real(Gamma))
+        L = jnp.multiply(Aij, sqrtgamma)
+
+        Af = jnp.multiply(Aij, jnp.conjugate(Gamma))
+
+        H_renormalized = -1j / 2 * (Aij @ self.dag(Af) - Af @ self.dag(Aij))
+
+        Htotal = U @ system_hamiltonian @ self.dag(U) + H_renormalized
+        liouvillian_energy_basis = (
+            -1j * (self.spre(Htotal) - self.spost(Htotal))
+            + self.sprepost(self.dag(L), L)
+            - 0.5 * (self.spre(L @ self.dag(L)) + self.spost(L @ self.dag(L)))
+        )
+
+        matrix_change_basis_bloch = jnp.einsum(
+            "kl,ilm,mn,jnk->ij", self.dag(U), _G, U, _G
+        )
+
+        vec_G = jax.vmap(lambda g: self.vec(g))(_G)
+
+        map_bloch_energy_basis = jnp.einsum(
+            "ij,jk,lk-> il", jnp.conjugate(vec_G), liouvillian_energy_basis, vec_G
+        )
+
+        map_bloch = (
+            matrix_change_basis_bloch
+            @ map_bloch_energy_basis
+            @ matrix_change_basis_bloch.T
+        )
+        return map_bloch
+
+    def likelihood_particle(self, particle, t):
+        M = self.make_bloch_matrix(particle)
+        expMt = expm(M * t)
+        evolved_vectors_states = jax.vmap(lambda v0: expMt @ v0)(
+            self.initial_states_bloch
+        )
+        p_outcome = jnp.einsum(
+            "iz,jkz-> ijk", evolved_vectors_states, self.trace_povm_G
+        ).real
+        # Notation: [init rho, basis, outcome, prob]
+        return p_outcome
+
+    def fim(
+        self,
+        particle,
+        t,
+        prob_initial_state,
+        prob_measurement_basis,
+    ):
+        prob_array = self.likelihood_particle(particle, t)
+        jac = jax.jacobian(self.likelihood_particle, argnums=0)(particle, t)
+        jac = jac.reshape(jac.shape[0], -1)
+
+        prob_over_pbasis_pstate = (
+            prob_array
+            / prob_measurement_basis[None, :, None]
+            / prob_initial_state[:, None, None]
+        ).flatten()
+        fim_element = jax.vmap(lambda x, p: jnp.outer(x, x) / p)(
+            jac.T, prob_over_pbasis_pstate
+        )
+        return fim_element.sum(axis=0)
+        # return jnp.where(~jnp.isinf(fim_element), fim_element, 0).sum(axis=0)
