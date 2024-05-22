@@ -4,12 +4,12 @@ import jax.numpy as jnp
 import numpy as np
 import qutip as qt
 
-from jax.scipy import expm
+from jax.scipy.linalg import expm
 
 from jax import jit
 
-
 from jaxtyping import Array, Float, Complex, Int, Real
+
 
 # These parameters are related to the ones used in the paper:
 # [1] A. Nazir and D. P. S. McCutcheon, Modelling Exciton-Phonon Interactions
@@ -33,7 +33,6 @@ S_plus = -0.3336948226536299
 
 true_parameters = jnp.array([2 * gamma_minus, 2 * gamma_plus, S_minus, S_plus])
 
-
 _G = jnp.array(
     [
         jnp.array(
@@ -51,7 +50,6 @@ _G = jnp.array(
     ]
 ) / jnp.sqrt(2)
 
-
 canonical_povm = (
     jnp.array(
         [
@@ -65,7 +63,6 @@ canonical_povm = (
     )
     / 2
 ).reshape(-1, 2, 2, 2)
-
 
 zero = qt.basis(2, 0)
 one = qt.basis(2, 1)
@@ -163,8 +160,19 @@ class SingleDotWeakCouplingGAME(BaseClassDimension):
         p_outcome = jnp.einsum(
             "iz,jkz-> ijk", evolved_vectors_states, self.trace_povm_G
         ).real
-        # Notation: [init rho, basis, outcome, prob]
+        # Notation: [init rho, basis, prob_of_each_outcome]
         return p_outcome
+
+    def likelihood_particle_with_basis_initial_state(
+        self, particle, t, dist_initial_state, dist_measurement_basis
+    ):
+        lkl = self.likelihood_particle(particle, t)
+        lkl = (
+            dist_initial_state[:, None, None]
+            * dist_measurement_basis[None, :, None]
+            * lkl
+        )
+        return lkl
 
     def fim(
         self,
@@ -173,17 +181,64 @@ class SingleDotWeakCouplingGAME(BaseClassDimension):
         prob_initial_state,
         prob_measurement_basis,
     ):
-        prob_array = self.likelihood_particle(particle, t)
+        lkl_outcome_array = self.likelihood_particle(particle, t)
         jac = jax.jacobian(self.likelihood_particle, argnums=0)(particle, t)
-        jac = jac.reshape(jac.shape[0], -1)
+        jac = jac.reshape(
+            jac.shape[0], -1
+        )  # now we have flattened with respect to the basis and initial states
 
-        prob_over_pbasis_pstate = (
-            prob_array
-            / prob_measurement_basis[None, :, None]
-            / prob_initial_state[:, None, None]
+        p_i_p_j_over_lkloutcome = (
+            1
+            / lkl_outcome_array
+            * prob_measurement_basis[None, :, None]
+            * prob_initial_state[:, None, None]
         ).flatten()
-        fim_element = jax.vmap(lambda x, p: jnp.outer(x, x) / p)(
-            jac.T, prob_over_pbasis_pstate
+        fim_element = jax.vmap(lambda x, p: jnp.outer(x, x) * p)(
+            jac.T, p_i_p_j_over_lkloutcome
         )
-        return fim_element.sum(axis=0)
-        # return jnp.where(~jnp.isinf(fim_element), fim_element, 0).sum(axis=0)
+        # return fim_element.sum(axis=0)
+        return jnp.where(~jnp.isinf(fim_element), fim_element, 0).sum(axis=0)
+
+    # def fim(
+    #     self,
+    #     particle,
+    #     t,
+    #     prob_initial_state,
+    #     prob_measurement_basis,
+    # ):
+    #     prob_array = self.likelihood_particle_with_basis_initial_state(
+    #         particle, t, prob_initial_state, prob_measurement_basis
+    #     )
+    #     jac = jax.jacobian(
+    #         self.likelihood_particle_with_basis_initial_state, argnums=0
+    #     )(particle, t, prob_initial_state, prob_measurement_basis)
+    #     jac = jac.reshape(jac.shape[0], -1)
+    #
+    #     # prob_over_pbasis_pstate = (
+    #     #     prob_array
+    #     #     / prob_measurement_basis[None, :, None]
+    #     #     / prob_initial_state[:, None, None]
+    #     # ).flatten()
+    #     fim_element = jax.vmap(lambda x, p: jnp.outer(x, x) / p)(
+    #         jac.T, prob_array.flatten()
+    #     )
+    #     # return fim_element.sum(axis=0)
+    #     return jnp.where(~jnp.isinf(fim_element), fim_element, 0).sum(axis=0)
+
+    def generate_data(
+        self, key, true_particle, t, initial_state_index, measurement_basis_index
+    ):
+        probabilities = self.likelihood_particle(true_particle, t)
+        # probabilities has the shape [init rho, basis, prob_of_each_outcome]
+        probability_given_state_and_basis = probabilities[
+            initial_state_index, measurement_basis_index
+        ]
+        probability_given_state_and_basis = (
+            probability_given_state_and_basis / probability_given_state_and_basis.sum()
+        )
+
+        no_outcomes = 2
+        outcome = jax.random.choice(
+            key, a=jnp.arange(no_outcomes), p=probability_given_state_and_basis
+        )
+        return jnp.array([initial_state_index, measurement_basis_index, outcome])

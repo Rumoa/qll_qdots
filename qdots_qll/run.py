@@ -140,6 +140,82 @@ class Run(eqx.Module):
         }
 
 
+class RunConditionalMeasurementsInitialStates(eqx.Module):
+
+    iteration: int
+    key: jax.Array
+    time: jax.Array
+    weights: jax.Array
+    particles_locations: jax.Array
+    cov_array: jax.Array
+    estimates_array: jax.Array
+    times_array: jax.Array
+    initial_state_distribution_array: jax.Array
+    measurement_basis_distribution_array: jax.Array
+    max_iterations: int
+    min_iterations: int
+    std_threshold: float
+
+    def __init__(
+        self,
+        iteration,
+        key,
+        time,
+        weights,
+        particles_locations,
+        cov_array,
+        estimates_array,
+        times_array,
+        initial_state_distribution_array,
+        measurement_basis_distribution_array,
+        max_iterations,
+        min_iterations,
+        std_threshold,
+    ):
+        self.iteration = iteration
+        self.key = key
+        self.time = time
+        self.weights = weights
+        self.particles_locations = particles_locations
+        self.cov_array = cov_array
+        self.estimates_array = estimates_array
+        self.times_array = times_array
+        self.initial_state_distribution_array = initial_state_distribution_array
+        self.measurement_basis_distribution_array = measurement_basis_distribution_array
+        self.max_iterations = max_iterations
+        self.min_iterations = min_iterations
+        self.std_threshold = std_threshold
+
+    def return_mutable_attributes(self):
+        """
+        Used to extract the fields to be updated by the smc update step.
+        """
+
+        return {
+            "iteration": self.iteration,
+            "key": self.key,
+            "weights": self.weights,
+            "particles_locations": self.particles_locations,
+            "cov_array": self.cov_array,
+            "estimates_array": self.estimates_array,
+            "times_array": self.times_array,
+            "initial_state_distribution_array": self.initial_state_distribution_array,
+            "measurement_basis_distribution_array": self.measurement_basis_distribution_array,
+        }
+
+    def return_immutable_attributes(self):
+        """
+        Complementary of the above function, except the cov_array
+        and estimates array.
+        """
+        return {
+            "max_iterations": self.max_iterations,
+            "min_iterations": self.min_iterations,
+            "std_threshold": self.std_threshold,
+            # self.cov_array,
+        }
+
+
 from qdots_qll.distributions import (
     est_mean,
     est_cov,

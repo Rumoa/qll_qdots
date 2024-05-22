@@ -396,17 +396,176 @@ class SMCUpdater(eqx.Module):
 
         key = keys[0]
 
-        results = jax.vmap(
-            self.model.generate_data, in_axes=(0, None, None, None)
-        )(keys[1:], self.true_pars, t, self.initial_state)
+        results = jax.vmap(self.model.generate_data, in_axes=(0, None, None, None))(
+            keys[1:], self.true_pars, t, self.initial_state
+        )
 
-        all_lkls = jax.vmap(
-            self.model.likelihood_particle, in_axes=(0, None, None)
-        )(particles_locations, t, self.initial_state)
+        all_lkls = jax.vmap(self.model.likelihood_particle, in_axes=(0, None, None))(
+            particles_locations, t, self.initial_state
+        )
 
-        lkl_results_all_particles = vmap(
-            self.likelihood_data, in_axes=(0, None)
-        )(all_lkls, results)
+        lkl_results_all_particles = vmap(self.likelihood_data, in_axes=(0, None))(
+            all_lkls, results
+        )
+
+        lkl = jnp.prod(lkl_results_all_particles, axis=1)
+
+        new_weights = self.update_weights(lkl, weights)
+        # return key, iteration + 1, particles_locations, new_weights
+
+        return {
+            "iteration": iteration + 1,
+            "key": key,
+            "weights": new_weights,
+            "particles_locations": particles_locations,
+            "time": t,
+            # self.cov_array,
+        }
+
+    # @jit
+    def _step_force_resampling(self, run_obj):
+
+        updated_variables_bf_resampling = self._iteration_smc_new_weights(
+            **run_obj.return_mutable_attributes()
+        )
+
+        updated_variables = jax.lax.cond(
+            False,
+            lambda a: a,
+            lambda a: {**a, **self.resampler.resample(**a)},
+            updated_variables_bf_resampling,
+        )
+
+        index_iter = updated_variables["iteration"]
+        new_cov_array = update_array_at(
+            index_iter, run_obj.cov_array, est_cov(**updated_variables)
+        )
+        new_estimates_array = update_array_at(
+            index_iter, run_obj.estimates_array, est_mean(**updated_variables)
+        )
+        new_times_array = update_array_at(
+            index_iter, run_obj.times_array, updated_variables["time"]
+        )
+
+        return Run(
+            **{
+                **updated_variables,
+                **run_obj.return_immutable_attributes(),
+                **{
+                    "cov_array": new_cov_array,
+                    "estimates_array": new_estimates_array,
+                    "times_array": new_times_array,
+                },
+            }
+        )
+
+    # @jit
+    def step(self, run_obj):
+
+        updated_variables_bf_resampling = self._iteration_smc_new_weights(
+            **run_obj.return_mutable_attributes()
+        )
+
+        updated_variables = jax.lax.cond(
+            ESS(updated_variables_bf_resampling["weights"])
+            > updated_variables_bf_resampling["weights"].shape[0] / 2,
+            lambda a: a,
+            lambda a: {**a, **self.resampler.resample(**a)},
+            updated_variables_bf_resampling,
+        )
+
+        index_iter = updated_variables["iteration"]
+        new_cov_array = update_array_at(
+            index_iter, run_obj.cov_array, est_cov(**updated_variables)
+        )
+        new_estimates_array = update_array_at(
+            index_iter, run_obj.estimates_array, est_mean(**updated_variables)
+        )
+        new_times_array = update_array_at(
+            index_iter, run_obj.times_array, updated_variables["time"]
+        )
+
+        return Run(
+            **{
+                **updated_variables,
+                **run_obj.return_immutable_attributes(),
+                **{
+                    "cov_array": new_cov_array,
+                    "estimates_array": new_estimates_array,
+                    "times_array": new_times_array,
+                },
+            }
+        )
+
+    # @jit
+    # def smc_run(self, stop_checker_function, initial_run):
+    #     step_fun = self.step
+    #     return jax.lax.while_loop(stop_checker_function, step_fun, initial_run)
+
+
+class SMCUpdaterConditionalMeasurementsInitialStates(eqx.Module):
+    model: eqx.Module
+    exp_design: eqx.Module
+    resampler: eqx.Module
+    initial_state: jax.Array
+    true_pars: jax.Array
+    number_exp_rep_matrix_shape: jax.Array
+
+    def __init__(
+        self,
+        model,
+        exp_design,
+        resampler,
+        initial_state,
+        true_pars,
+        number_exp_repetitions,
+    ):
+        self.model = model
+        self.exp_design = exp_design
+        self.resampler = resampler
+        self.initial_state = initial_state
+        self.true_pars = true_pars
+        self.number_exp_rep_matrix_shape = jnp.identity(number_exp_repetitions)
+
+    def likelihood_data(self, lkl_results, result):
+        # result should be an array or list
+        return lkl_results[*result]
+
+    def update_weights(self, lkl, weights):
+        new_weights = lkl * weights
+        # actually we don't need to normalize all the time, as Alexandra told me
+        # new_weights = new_weights / jnp.sum(new_weights)
+        return new_weights
+
+    # @jit
+    def _iteration_smc_new_weights(
+        self, key, iteration, particles_locations, weights, *args, **kwargs
+    ):
+        key, subkey = jax.random.split(key)
+
+        t = self.exp_design.generate_time(
+            key=subkey,
+            particles_locations=particles_locations,
+            weights=weights,
+            model=self.model,
+            initial_state=self.initial_state,
+        )
+        number_of_exp_re = self.number_exp_rep_matrix_shape.shape[0]
+        keys = jax.random.split(key, number_of_exp_re + 1)
+
+        key = keys[0]
+
+        results = jax.vmap(self.model.generate_data, in_axes=(0, None, None, None))(
+            keys[1:], self.true_pars, t, self.initial_state
+        )
+
+        all_lkls = jax.vmap(self.model.likelihood_particle, in_axes=(0, None, None))(
+            particles_locations, t, self.initial_state
+        )
+
+        lkl_results_all_particles = vmap(self.likelihood_data, in_axes=(0, None))(
+            all_lkls, results
+        )
 
         lkl = jnp.prod(lkl_results_all_particles, axis=1)
 
@@ -509,6 +668,4 @@ def SMC_run(
     checker_obj,
     smc_obj,
 ):
-    return jax.lax.while_loop(
-        checker_obj.check_stop, smc_obj.step, initial_run
-    )
+    return jax.lax.while_loop(checker_obj.check_stop, smc_obj.step, initial_run)
