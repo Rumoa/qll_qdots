@@ -10,29 +10,13 @@ from jax import jit
 
 from jaxtyping import Array, Float, Complex, Int, Real
 
+import qdots_qll.models.quantum_utils
 
 # These parameters are related to the ones used in the paper:
 # [1] A. Nazir and D. P. S. McCutcheon, Modelling Exciton-Phonon Interactions
 # in Optically Driven Quantum Dots, J. Phys.: Condens. Matter 28, 103002 (2016).
 # in the weak coupling regime (FIG. 1). Since we use the GAME master equation,
 # we need to double the decay rates to match the same behaviour.
-
-
-def rho_to_bloch(rho):
-    return jnp.einsum("ijk,kj-> i", _G, rho).real
-
-
-def bloch_to_rho(bloch_v):
-    return jnp.einsum("jkl, j", _G, bloch_v)
-
-
-gamma_minus = 0.15710846160566203
-gamma_plus = 0.17916503425352892
-S_minus = 0.053851494081252074
-S_plus = -0.3336948226536299
-
-true_parameters = jnp.array([2 * gamma_minus, 2 * gamma_plus, S_minus, S_plus])
-
 _G = jnp.array(
     [
         jnp.array(
@@ -49,6 +33,22 @@ _G = jnp.array(
         ),
     ]
 ) / jnp.sqrt(2)
+
+
+def rho_to_bloch(rho):
+    return jnp.einsum("ijk,kj-> i", _G, rho).real
+
+
+def bloch_to_rho(bloch_v):
+    return jnp.einsum("jkl, j", _G, bloch_v)
+
+
+gamma_minus = 0.15710846160566203
+gamma_plus = 0.17916503425352892
+S_minus = 0.053851494081252074
+S_plus = -0.3336948226536299
+
+true_parameters = jnp.array([2 * gamma_minus, 2 * gamma_plus, S_minus, S_plus])
 
 canonical_povm = (
     jnp.array(

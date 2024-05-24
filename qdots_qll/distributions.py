@@ -5,11 +5,11 @@ from jaxtyping import Array, Float, Complex, Int
 import equinox as eqx
 
 
-def est_mean(particles_locations, weights, **kwargs):
+def _est_mean(particles_locations, weights, **kwargs):
     return jnp.einsum("i, ij -> j", weights, particles_locations)
 
 
-def est_cov(particles_locations, weights, **kwargs):
+def _est_cov(particles_locations, weights, **kwargs):
     return jnp.einsum(
         "i, im, ik -> mk", weights, particles_locations, particles_locations
     ) - jnp.einsum(
@@ -21,46 +21,72 @@ def est_cov(particles_locations, weights, **kwargs):
     )
 
 
-def ESS(weights):
+def _multiply_lkl(u, p):
+    if u is None:
+        return p
+    else:
+        return p * u
+
+
+def _ESS(weights):
     return 1 / jnp.sum(weights**2)
 
 
+def update_weights(dist, new_lkl):
+    get_weights = lambda t: t.weights
+    new_weights = dist.weights * new_lkl
+    new_weights = new_weights / new_weights.sum()
+    return eqx.tree_at(get_weights, dist, replace=new_weights)
+
+
+def update_particles_locations(dist, new_particles_locations):
+    get_particles_locations = lambda t: t.particles_locations
+
+    return eqx.tree_at(get_particles_locations, dist, replace=new_particles_locations)
+
+
+# class Distribution(eqx.Module):
+#     no_particles: int
+#     no_parameters: int
+#
+#     def __init__(self, no_particles: int, no_parameters: int) -> None:
+#         self.no_particles = no_particles
+#         self.no_parameters = no_parameters
+#
+#     def est_mean(self, particles_locations, weights):
+#         return est_mean(particles_locations, weights)
+#
+#     def est_covariance(self, particles_locations, weights):
+#         return est_cov(particles_locations, weights)
+
+
 class Distribution(eqx.Module):
+    no_rv: int
     no_particles: int
-    no_parameters: int
-
-    def __init__(self, no_particles: int, no_parameters: int) -> None:
-        self.no_particles = no_particles
-        self.no_parameters = no_parameters
-
-    def est_mean(self, particles_locations, weights):
-        return est_mean(particles_locations, weights)
-
-    def est_covariance(self, particles_locations, weights):
-        return est_cov(particles_locations, weights)
-
-
-class SimpleDistribution(eqx.Module):
-    no_particles: int
-    no_parameters: int
     particles_locations: Array
     weights: Array
 
     def __init__(self, particles_locations, weights) -> None:
         self.no_particles = particles_locations.shape[0]
-        self.no_parameters = particles_locations.shape[1]
+        self.no_rv = particles_locations.shape[1]
         self.particles_locations = particles_locations
         self.weights = weights
 
-    def est_mean(
+    def ev(
         self,
     ):
-        return est_mean(self.particles_locations, self.weights)
+        return _est_mean(self.particles_locations, self.weights)
 
-    def est_covariance(
+    def cov(
         self,
     ):
-        return est_cov(self.particles_locations, self.weights)
+        return _est_cov(self.particles_locations, self.weights)
+
+    def ESS(self):
+        return _ESS(self.weights)
+
+    def check_resampling(self, resampling_threshold=0.5):
+        return self.ESS() <= resampling_threshold * self.no_particles
 
 
 def initialize_particle_locations(

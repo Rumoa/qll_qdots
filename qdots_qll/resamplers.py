@@ -1,4 +1,4 @@
-from qdots_qll.distributions import est_mean, est_cov
+from qdots_qll.distributions import _est_mean, _est_cov
 import jax
 import jax.numpy as jnp
 import equinox as eqx
@@ -6,16 +6,17 @@ import equinox as eqx
 
 class LWResampler(eqx.Module):
     a: int
+    # parameters_bounds: jax.array
 
     def __init__(self, a=0.98):
         self.a = a
 
     def resample(self, key, particles_locations, weights, *args, **kwargs):
         no_particles = particles_locations.shape[0]
-        no_pars = particles_locations.shape[1]
-        mu = est_mean(particles_locations, weights)
+        # no_rv = particles_locations.shape[1]
+        mu = _est_mean(particles_locations, weights)
         h = jnp.sqrt(1 - self.a**2)
-        sigma = est_cov(particles_locations, weights) * h**2
+        sigma = _est_cov(particles_locations, weights) * h**2
 
         # sigma = (
         #     jnp.diag(jnp.array([10, 10, 1, 1, 1]))
