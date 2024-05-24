@@ -85,6 +85,11 @@ class SingleDotWeakCouplingGAME(BaseClassDimension):
     initial_states_bloch: Float[Array, "no_initial_states d"]
     basis_elements: jax.Array
     trace_povm_G: Float[Array, "no_outcomes d"]
+    system_hamiltonian: Float[Array, "2 2"]
+    Aij: Complex[Array, "2 2"]
+    U: Complex[Array, "2 2"]
+    matrix_change_basis_bloch: Complex[Array, "2 2"]
+    vec_G: Complex[Array, "d d d"]
 
     def __init__(self):
         super().__init__(dimension=2)
@@ -96,6 +101,12 @@ class SingleDotWeakCouplingGAME(BaseClassDimension):
         self.basis_elements = jnp.identity(4)
         self.initial_states_bloch = initial_states_bloch
         self.trace_povm_G = jnp.einsum("ijkm,lmk", self.POVM_arr, _G).real
+        self.system_hamiltonian = self.make_system_hamiltonian()
+        self.Aij = self.make_Aij()[0]
+        self.U = self.make_Aij()[1]
+        self.matrix_change_basis_bloch = self.bloch_matrix_change_of_basis(self.U)
+
+        self.vec_G = jax.vmap(lambda g: self.vec(g))(_G)
 
     def make_bloch_matrix(self, particle):
         gn, gp, Sn, Sp = particle
@@ -103,17 +114,12 @@ class SingleDotWeakCouplingGAME(BaseClassDimension):
         Snot = -self.delta
         # system_hamiltonian = self.delta * jnp.array([[1, 0], [0, -1]]) / 2 + self.Omega * jnp.array(
         #     [[0, 1], [1, 0]]) / 2
-        system_hamiltonian = (
-            self.delta * jnp.array([[1, 0], [0, 0]])
-            + self.Omega * jnp.array([[0, 1], [1, 0]]) / 2
-        )
+        # system_hamiltonian = self.make_system_hamiltonian()
 
         # A = jnp.array([[1, 0], [0, -1]])/2
-        A = jnp.array([[1, 0], [0, 0]])
-
-        U = jnp.linalg.eigh(system_hamiltonian)[1]
-
-        Aij = U @ A @ self.dag(U)
+        # Aij, U = self.make_Aij()
+        Aij = self.Aij
+        U = self.U
 
         Cp = 0.5 * gp + 1j * Sp
         Cn = 0.5 * gn + 1j * Sn
@@ -127,18 +133,16 @@ class SingleDotWeakCouplingGAME(BaseClassDimension):
 
         H_renormalized = -1j / 2 * (Aij @ self.dag(Af) - Af @ self.dag(Aij))
 
-        Htotal = U @ system_hamiltonian @ self.dag(U) + H_renormalized
+        Htotal = U @ self.system_hamiltonian @ self.dag(U) + H_renormalized
         liouvillian_energy_basis = (
             -1j * (self.spre(Htotal) - self.spost(Htotal))
             + self.sprepost(self.dag(L), L)
             - 0.5 * (self.spre(L @ self.dag(L)) + self.spost(L @ self.dag(L)))
         )
 
-        matrix_change_basis_bloch = jnp.einsum(
-            "kl,ilm,mn,jnk->ij", self.dag(U), _G, U, _G
-        )
+        matrix_change_basis_bloch = self.matrix_change_basis_bloch
 
-        vec_G = jax.vmap(lambda g: self.vec(g))(_G)
+        vec_G = self.vec_G
 
         map_bloch_energy_basis = jnp.einsum(
             "ij,jk,lk-> il", jnp.conjugate(vec_G), liouvillian_energy_basis, vec_G
@@ -150,6 +154,25 @@ class SingleDotWeakCouplingGAME(BaseClassDimension):
             @ matrix_change_basis_bloch.T
         )
         return map_bloch
+
+    def bloch_matrix_change_of_basis(self, U):
+        matrix_change_basis_bloch = jnp.einsum(
+            "kl,ilm,mn,jnk->ij", self.dag(U), _G, U, _G
+        )
+        return matrix_change_basis_bloch
+
+    def make_Aij(self):
+        A = jnp.array([[1, 0], [0, 0]])
+        U = jnp.linalg.eigh(self.system_hamiltonian)[1]
+        Aij = U @ A @ self.dag(U)
+        return Aij, U
+
+    def make_system_hamiltonian(self):
+        system_hamiltonian = (
+            self.delta * jnp.array([[1, 0], [0, 0]])
+            + self.Omega * jnp.array([[0, 1], [1, 0]]) / 2
+        )
+        return system_hamiltonian
 
     def likelihood_particle(self, particle, t):
         M = self.make_bloch_matrix(particle)
