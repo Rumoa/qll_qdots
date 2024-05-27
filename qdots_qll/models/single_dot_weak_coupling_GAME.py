@@ -34,6 +34,19 @@ _G = jnp.array(
     ]
 ) / jnp.sqrt(2)
 
+is_probability_correct = lambda p: jnp.logical_and((p >= 0.0), (p <= 1.0))
+trim_invalid_probs = lambda prob_array: jnp.where(
+    is_probability_correct(prob_array), prob_array, jnp.abs(prob_array) * 0
+)
+
+trim_nan_probs = lambda prob_array: jnp.where(
+    ~jnp.isnan(prob_array), prob_array, jnp.abs(prob_array) * 0
+)
+
+
+def clean_probabilities(prob_array):
+    return trim_nan_probs(trim_invalid_probs(prob_array))
+
 
 def rho_to_bloch(rho):
     return jnp.einsum("ijk,kj-> i", _G, rho).real
@@ -184,7 +197,7 @@ class SingleDotWeakCouplingGAME(BaseClassDimension):
             "iz,jkz-> ijk", evolved_vectors_states, self.trace_povm_G
         ).real
         # Notation: [init rho, basis, prob_of_each_outcome]
-        return p_outcome
+        return clean_probabilities(p_outcome)
 
     def likelihood_particle_with_basis_initial_state(
         self, particle, t, dist_initial_state, dist_measurement_basis
@@ -195,7 +208,7 @@ class SingleDotWeakCouplingGAME(BaseClassDimension):
             * dist_measurement_basis[None, :, None]
             * lkl
         )
-        return lkl
+        return clean_probabilities(lkl)
 
     def fim(
         self,
