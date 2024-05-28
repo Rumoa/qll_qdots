@@ -8,7 +8,7 @@ from collections import namedtuple
 import warnings
 
 
-def is_valid_particle(particle, boundaries):
+def is_valid_particle_array_version(particle, boundaries):
     particle = jnp.atleast_2d(particle)
 
     lower_bounds = boundaries[:, 0]
@@ -18,9 +18,13 @@ def is_valid_particle(particle, boundaries):
     within_upper = jnp.all(particle <= upper_bounds, axis=1)
 
     return jnp.logical_and(within_lower, within_upper)
-    # return jnp.bool(
-    #     ((boundaries[:, 1] > particle) * (boundaries[:, 0] <= particle)).T.prod(axis=0)
-    # )[0]
+
+
+def is_valid_particle(particle, boundaries):
+    particle = jnp.atleast_2d(particle)
+    return jnp.bool(
+        ((boundaries[:, 1] > particle) * (boundaries[:, 0] <= particle)).T.prod(axis=0)
+    )[0]
 
 
 class LWResampler(eqx.Module):
@@ -76,18 +80,6 @@ class LWResamplerBounds(eqx.Module):
         self.a = a
         self.parameters_bounds = parameters_bounds
         self.max_iterations = 10
-
-    # def resample_now(self, key, particles_locations, weights):
-    #     no_particles = particles_locations.shape[0]
-    #
-    #     mu = _est_mean(particles_locations, weights)
-    #     h = jnp.sqrt(1 - self.a**2)
-    #     sigma = _est_cov(particles_locations, weights) * h**2
-    #
-    #     key, new_particle_location = self.propose_new_particle(
-    #         key, particles_locations, weights, mu, sigma
-    #     )
-    #     return key, new_particle_location
 
     def cond_keep_resampling(self, candidate, iteration):
         return jnp.logical_and(
@@ -159,9 +151,40 @@ class LWResamplerBounds(eqx.Module):
             subkey, new_mu, sigma, shape=(no_particles,)
         )
 
-        return key, new_particles_locations
+        # return key, new_particles_locations
 
-        new_particles_locations = new_particles_locations.reshape(no_particles, no_rv)
+        # array_is_valid = is_valid_particle_array_version(
+        #     new_particles_locations, self.parameters_bounds
+        # )
+        #
+        # number_wrong_particles = (~array_is_valid.flatten()).sum()
+
+        key, subkey = jax.random.split(key)
+
+        subkeys = jax.random.split(subkey, new_particles_locations.shape[0])
+
+        def resample_wrong_one(particle, subkey):
+            true_fun = lambda particle, subkey: particle
+
+            def false_fun(particle, subkey):
+                _, candidate, _ = self.resample_one_particle(
+                    subkey, particles_locations, weights, mu, sigma
+                )
+                return candidate[0]
+
+            return jax.lax.cond(
+                is_valid_particle(particle, self.parameters_bounds),
+                true_fun,
+                false_fun,
+                *(particle, subkey)
+            )
+
+        new_particles_locations = jax.vmap(resample_wrong_one, in_axes=(0, 0))(
+            new_particles_locations, subkeys
+        )
+
+        # return key, new_particles_locations
+        # new_particles_locations = new_particles_locations.reshape(no_particles, no_rv)
 
         # key, subkey = jax.random.split(key)
         # new_particles_location = jax.random.multivariate_normal(
@@ -170,13 +193,13 @@ class LWResamplerBounds(eqx.Module):
 
         # Now we need to check if the new particles are correct.
 
-        is_valid_particle(new_particles_location, self.parameters_bounds)
+        # is_valid_particle(new_particles_location, self.parameters_bounds)
 
         new_weights = jnp.ones(no_particles) / no_particles
         # return key, new_particles_location, new_weights
         return {
             "key": key,
             "weights": new_weights,
-            "particles_locations": new_particles_location,
+            "particles_locations": new_particles_locations,
             # self.cov_array,
         }
