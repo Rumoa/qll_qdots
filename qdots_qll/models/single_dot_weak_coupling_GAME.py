@@ -66,12 +66,12 @@ true_parameters = jnp.array([2 * gamma_minus, 2 * gamma_plus, S_minus, S_plus])
 canonical_povm = (
     jnp.array(
         [
-            qt.identity(2) + qt.sigmax(),
-            qt.identity(2) - qt.sigmax(),
-            qt.identity(2) + qt.sigmay(),
-            qt.identity(2) - qt.sigmay(),
-            qt.identity(2) + qt.sigmaz(),
-            qt.identity(2) - qt.sigmaz(),
+            qt.identity(2).full() + qt.sigmax().full(),
+            qt.identity(2).full() - qt.sigmax().full(),
+            qt.identity(2).full() + qt.sigmay().full(),
+            qt.identity(2).full() - qt.sigmay().full(),
+            qt.identity(2).full() + qt.sigmaz().full(),
+            qt.identity(2).full() - qt.sigmaz().full(),
         ]
     )
     / 2
@@ -84,7 +84,7 @@ minus = (qt.basis(2, 0) + 1j * qt.basis(2, 1)).unit()
 
 initial_states = [zero, one, plus, minus]
 
-initial_states_dm = jnp.array([qt.ket2dm(i) for i in initial_states])
+initial_states_dm = jnp.array([qt.ket2dm(i).full() for i in initial_states])
 
 initial_states_bloch = jax.vmap(rho_to_bloch)(initial_states_dm)
 

@@ -41,23 +41,7 @@ def update_weights(dist, new_lkl):
 
 def update_particles_locations(dist, new_particles_locations):
     get_particles_locations = lambda t: t.particles_locations
-
     return eqx.tree_at(get_particles_locations, dist, replace=new_particles_locations)
-
-
-# class Distribution(eqx.Module):
-#     no_particles: int
-#     no_parameters: int
-#
-#     def __init__(self, no_particles: int, no_parameters: int) -> None:
-#         self.no_particles = no_particles
-#         self.no_parameters = no_parameters
-#
-#     def est_mean(self, particles_locations, weights):
-#         return est_mean(particles_locations, weights)
-#
-#     def est_covariance(self, particles_locations, weights):
-#         return est_cov(particles_locations, weights)
 
 
 class Distribution(eqx.Module):

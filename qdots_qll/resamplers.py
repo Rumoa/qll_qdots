@@ -127,9 +127,13 @@ class LWResamplerBounds(eqx.Module):
         )
         return key, new_particle_location
 
-    def resample(self, key, particles_locations, weights, *args, **kwargs):
+    def resample(
+        self,
+        key,
+        particles_locations,
+        weights,
+    ):
         no_particles = particles_locations.shape[0]
-        no_rv = particles_locations.shape[1]
         mu = _est_mean(particles_locations, weights)
         h = jnp.sqrt(1 - self.a**2)
         sigma = _est_cov(particles_locations, weights) * h**2
@@ -145,19 +149,9 @@ class LWResamplerBounds(eqx.Module):
 
         key, subkey = jax.random.split(key)
 
-        # subkeys = jax.random.split(subkey, no_particles)
-
         new_particles_locations = jax.random.multivariate_normal(
             subkey, new_mu, sigma, shape=(no_particles,)
         )
-
-        # return key, new_particles_locations
-
-        # array_is_valid = is_valid_particle_array_version(
-        #     new_particles_locations, self.parameters_bounds
-        # )
-        #
-        # number_wrong_particles = (~array_is_valid.flatten()).sum()
 
         key, subkey = jax.random.split(key)
 
@@ -183,23 +177,9 @@ class LWResamplerBounds(eqx.Module):
             new_particles_locations, subkeys
         )
 
-        # return key, new_particles_locations
-        # new_particles_locations = new_particles_locations.reshape(no_particles, no_rv)
-
-        # key, subkey = jax.random.split(key)
-        # new_particles_location = jax.random.multivariate_normal(
-        #     subkey, new_mu, sigma, shape=(no_particles,)
-        # )
-
-        # Now we need to check if the new particles are correct.
-
-        # is_valid_particle(new_particles_location, self.parameters_bounds)
-
         new_weights = jnp.ones(no_particles) / no_particles
-        # return key, new_particles_location, new_weights
         return {
             "key": key,
             "weights": new_weights,
             "particles_locations": new_particles_locations,
-            # self.cov_array,
         }
