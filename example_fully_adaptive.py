@@ -1,6 +1,6 @@
 from datetime import datetime, timedelta
 from time import process_time
-
+from pathlib import Path
 from qdots_qll.models.single_dot_weak_coupling_GAME import *
 
 from qdots_qll.resamplers import LWResamplerBounds
@@ -136,7 +136,13 @@ def transpose_results(pytree):
 
 
 init_time = datetime.today().strftime("%Y-%m-%d_%H:%M:%S")
-filename = "results_one_qubit/run_" + init_time
+directory = Path("results_one_qubit")
+# directory = Path("ojo")
+
+if not directory.exists():
+    directory.mkdir(parents=True, exist_ok=True)
+
+filename = directory / str("/run_" + init_time)
 
 
 # Definition of parameters
