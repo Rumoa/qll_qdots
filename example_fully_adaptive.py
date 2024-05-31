@@ -119,7 +119,14 @@ def f_scan(carry, _):
         pdist.check_resampling(), pls_resample, do_not_resample, *(key, pdist)
     )
 
-    return (key, pdist, p_initial_state, p_measurement_basis), (outcome, t, pdist)
+    return (key, pdist, p_initial_state, p_measurement_basis), (
+        outcome,
+        t,
+        pdist.ev(),
+        pdist.cov(),
+        p_initial_state,
+        p_measurement_basis,
+    )
 
 
 def tree_stack(trees):
@@ -135,7 +142,7 @@ def transpose_results(pytree):
     return tree_stack(list(map(list, zip(*tree_unstack(tree_unstack(pytree))))))
 
 
-init_time = datetime.today().strftime("%Y-%m-%d_%H:%M:%S")
+init_time = datetime.today().strftime("%Y-%m-%d_%H-%M-%S")
 directory = Path("results_one_qubit")
 # directory = Path("ojo")
 
