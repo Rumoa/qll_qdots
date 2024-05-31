@@ -142,7 +142,8 @@ directory = Path("results_one_qubit")
 if not directory.exists():
     directory.mkdir(parents=True, exist_ok=True)
 
-filename = directory / str("/run_" + init_time)
+
+filename = str(directory) + str("/run_" + init_time)
 
 
 # Definition of parameters
