@@ -15,8 +15,8 @@ from functools import partial
 
 import os
 
-os.environ["XLA_PYTHON_CLIENT_PREALLOCATE"] = "false"
-os.environ["XLA_PYTHON_CLIENT_MEM_FRACTION"] = ".90"
+# os.environ["XLA_PYTHON_CLIENT_PREALLOCATE"] = "false"
+# os.environ["XLA_PYTHON_CLIENT_MEM_FRACTION"] = ".90"
 
 
 @jit
@@ -91,14 +91,12 @@ def compute_p(vec_rho, vec_measurement_op):
     Returns:
         _type_: _description_
     """
-    praw = jnp.real(
-        jnp.dot(jnp.conjugate(vec_rho).T, vec_measurement_op)
-    ).astype(float)[0, 0]
+    praw = jnp.real(jnp.dot(jnp.conjugate(vec_rho).T, vec_measurement_op)).astype(
+        float
+    )[0, 0]
 
     upper_trim = jax.lax.cond(praw <= 1.0, lambda a: a, lambda a: 0.0, praw)
-    lower_trim = jax.lax.cond(
-        upper_trim >= 0.0, lambda a: a, lambda a: 0.0, upper_trim
-    )
+    lower_trim = jax.lax.cond(upper_trim >= 0.0, lambda a: a, lambda a: 0.0, upper_trim)
 
     return lower_trim
     # return jnp.clip(
@@ -139,9 +137,7 @@ def make_H_renormalization(particles_h):
 @jit
 def make_liouvillian(H, model):
     d = model["Identity matrix"].shape[0]
-    return 1j * jnp.kron(H.T, jnp.identity(d)) - 1j * jnp.kron(
-        jnp.identity(d), H
-    )
+    return 1j * jnp.kron(H.T, jnp.identity(d)) - 1j * jnp.kron(jnp.identity(d), H)
 
 
 @jit
@@ -265,9 +261,7 @@ def generate_data(
     rhot = v_evolve(t, true_L, rho0)
     p = compute_p(rhot, measurement_op)
     key, subkey = jax.random.split(key)
-    return key, jax.random.choice(
-        subkey, a=jnp.array([0, 1]), p=jnp.array([1, 1 - p])
-    )
+    return key, jax.random.choice(subkey, a=jnp.array([0, 1]), p=jnp.array([1, 1 - p]))
 
 
 # TODO write this in jax

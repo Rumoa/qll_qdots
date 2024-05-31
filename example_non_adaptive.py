@@ -73,25 +73,26 @@ def f_scan(carry, _):
     key, pdist, p_initial_state, p_measurement_basis = carry
     key, subkey = jax.random.split(key)
 
-    t = eqx.filter_jit(expdesign.generate_time)(
-        key=subkey,
-        particles_locations=pdist.particles_locations,
-        weights=pdist.weights,
-        model=model,
-        prob_initial_state=p_initial_state,
-        prob_measurement_basis=p_measurement_basis,
-    )
+    # t = eqx.filter_jit(expdesign.generate_time)(
+    #     key=subkey,
+    #     particles_locations=pdist.particles_locations,
+    #     weights=pdist.weights,
+    #     model=model,
+    #     prob_initial_state=p_initial_state,
+    #     prob_measurement_basis=p_measurement_basis,
+    # )
+    t = jax.random.uniform(key=subkey, minval=0.01, maxval=50.0)
     # times_list.append(t)
 
-    p_initial_state, p_measurement_basis = eqx.filter_jit(
-        popt.optimize_probability_distribution
-    )(
-        dist_initial_state=p_initial_state,
-        dist_measurement_basis=p_measurement_basis,
-        model=model,
-        t=t,
-        particle=pdist.ev(),
-    )
+    # p_initial_state, p_measurement_basis = eqx.filter_jit(
+    #     popt.optimize_probability_distribution
+    # )(
+    #     dist_initial_state=p_initial_state,
+    #     dist_measurement_basis=p_measurement_basis,
+    #     model=model,
+    #     t=t,
+    #     particle=pdist.ev(),
+    # )
 
     key, subkey = jax.random.split(key)
     chosen_initial_state = jax.random.choice(
