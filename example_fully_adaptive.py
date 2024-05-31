@@ -1,29 +1,5 @@
-import optax.projections
-
-import joblib
-
-
-import jax
-import jax.numpy as jnp
-import equinox as eqx
-
-import numpy as np
-import matplotlib.pyplot as plt
-
-from qdots_qll.distributions import (
-    Distribution,
-    update_particles_locations,
-    update_weights,
-)
-
-import numpy as np
-import qutip as qt
-import matplotlib.pyplot as plt
-
-from sklearn.metrics import mean_squared_error
-
-from jax import jit
-from jax.scipy.linalg import expm
+from datetime import datetime, timedelta
+from time import process_time
 
 from qdots_qll.models.single_dot_weak_coupling_GAME import *
 
@@ -32,73 +8,23 @@ from qdots_qll.resamplers import LWResamplerBounds
 from qdots_qll.exp_design import OptimizeInitialStateMeasurements, MaxDetFimExpDesign
 
 from tensorflow_probability.substrates import jax as tfp
-import optax
 
-import jax.tree_util as jtu
+import joblib
 
-
-def tree_stack(trees):
-    return jax.tree.map(lambda *v: jnp.stack(v), *trees)
-
-
-def tree_unstack(tree):
-    leaves, treedef = jax.tree.flatten(tree)
-    return [treedef.unflatten(leaf) for leaf in zip(*leaves, strict=True)]
-
-
-def transpose_results(pytree):
-    return tree_stack(list(map(list, zip(*tree_unstack(tree_unstack(pytree))))))
-
-
-# Definition of parameters
-
-boundaries = jnp.array(
-    [
-        [0.1, 0.5],
-        [0.1, 0.5],
-        [0.01, 0.2],
-        [-0.5, -0.01],
-    ]
+from qdots_qll.distributions import (
+    Distribution,
 )
 
-seed = 1
-no_particles = 1000
-no_initial_states = 4
-no_measurement_basis = 3
+import equinox as eqx
+import jax
+import jax.numpy as jnp
+from jax import numpy
+from tensorflow_probability.substrates import jax as tfp
 
-no_runs = 10
-no_max_iterations = 10
+from qdots_qll.distributions import Distribution, update_weights
 
-filename = "prueba.job"
 
-popt = OptimizeInitialStateMeasurements(iter=2, lr=0.01)
-expdesign = MaxDetFimExpDesign(t_min=0.01, t_max=45.0, sgd_iter=4, lr=0.01)
-resampler = LWResamplerBounds(a=0.98, parameters_bounds=boundaries)
-
-mus = boundaries.mean(axis=1)
-sigmas = jnp.abs((boundaries[:, 0] - boundaries[:, 1]) / (2 * 1))
-
-key = jax.random.PRNGKey(seed=seed)
-
-model = SingleDotWeakCouplingGAME()
-
-key, subkey = jax.random.split(key)
-particles_locations = tfp.distributions.TruncatedNormal(
-    loc=mus, scale=sigmas, low=boundaries[:, 0], high=boundaries[:, 1]
-).sample(seed=subkey, sample_shape=no_particles)
-
-weights = jnp.ones(no_particles) / no_particles
-
-pdist = Distribution(particles_locations, weights)
-
-p_initial_state = jnp.ones(no_initial_states) / no_initial_states
-p_measurement_basis = jnp.ones(no_measurement_basis) / no_measurement_basis
-
-new_p_initial_state, new_p_measurement_basis = p_initial_state, p_measurement_basis
-
-times_list = []
-cov_list = []
-outcomes_list = []
+from qdots_qll.models.single_dot_weak_coupling_GAME import true_parameters
 
 
 @eqx.filter_jit
@@ -196,14 +122,107 @@ def f_scan(carry, _):
     return (key, pdist, p_initial_state, p_measurement_basis), (outcome, t, pdist)
 
 
-f_scan_mapped = jax.vmap(f_scan, in_axes=(0, None))
+def tree_stack(trees):
+    return jax.tree.map(lambda *v: jnp.stack(v), *trees)
 
+
+def tree_unstack(tree):
+    leaves, treedef = jax.tree.flatten(tree)
+    return [treedef.unflatten(leaf) for leaf in zip(*leaves, strict=True)]
+
+
+def transpose_results(pytree):
+    return tree_stack(list(map(list, zip(*tree_unstack(tree_unstack(pytree))))))
+
+
+init_time = datetime.today().strftime("%Y-%m-%d_%H:%M:%S")
+filename = "results_one_qubit/run_" + init_time
+
+
+# Definition of parameters
+
+boundaries = jnp.array(
+    [
+        [0.1, 0.5],
+        [0.1, 0.5],
+        [0.01, 0.2],
+        [-0.5, -0.01],
+    ]
+)
+
+seed = 2
+no_particles = 1000
+
+no_runs = 25
+no_max_iterations = 10000
+
+mus = boundaries.mean(axis=1)
+sigmas = jnp.abs((boundaries[:, 0] - boundaries[:, 1]) / (2 * 1))
+
+
+popt = OptimizeInitialStateMeasurements(iter=2, lr=0.01)
+expdesign = MaxDetFimExpDesign(t_min=0.01, t_max=45.0, sgd_iter=4, lr=0.01)
+resampler = LWResamplerBounds(a=0.98, parameters_bounds=boundaries)
+
+
+key = jax.random.PRNGKey(seed=seed)
+
+model = SingleDotWeakCouplingGAME()
+
+key, subkey = jax.random.split(key)
+particles_locations = tfp.distributions.TruncatedNormal(
+    loc=mus, scale=sigmas, low=boundaries[:, 0], high=boundaries[:, 1]
+).sample(seed=subkey, sample_shape=no_particles)
+
+weights = jnp.ones(no_particles) / no_particles
+
+pdist = Distribution(particles_locations, weights)
+
+
+no_initial_states = 4
+no_measurement_basis = 3
+p_initial_state = jnp.ones(no_initial_states) / no_initial_states
+p_measurement_basis = jnp.ones(no_measurement_basis) / no_measurement_basis
+new_p_initial_state, new_p_measurement_basis = p_initial_state, p_measurement_basis
+
+
+f_scan_mapped = jax.vmap(f_scan, in_axes=(0, None))
 
 initial_carries = jax.vmap(initialize_carry)(jax.random.split(subkey, no_runs))
 
+print(f"Number of particles: {no_particles}")
+print(f"Number of runs: {no_runs}")
+print(f"Max iterations: {no_max_iterations}")
 
+
+print(f"Estimating compilation and iteration time ...")
+# Estimation of runtime
+t1_start = process_time()
+jax.lax.scan(f_scan_mapped, init=initial_carries, xs=None, length=1)
+t1_stop = process_time()
+
+comp_time = t1_stop - t1_start
+
+
+t1_start = process_time()
+jax.lax.scan(f_scan_mapped, init=initial_carries, xs=None, length=1)
+t1_stop = process_time()
+
+iter_time = t1_stop - t1_start
+
+
+total_time = comp_time + iter_time * (no_max_iterations - 1)
+final_time = datetime.now() + timedelta(seconds=total_time)
+print(f"Compilation time: {comp_time} seconds")
+print(f"Iteration time: {iter_time} seconds")
+print(f"Expected total time: {total_time} seconds")
+print(f"Expected finishing time: {final_time}")
+
+print("Starting runs... ")
 _, results = jax.lax.scan(
     f_scan_mapped, init=initial_carries, xs=None, length=no_max_iterations
 )
 
+
 joblib.dump(results, filename)
+print(f"Runs completed at {datetime.now()}")
