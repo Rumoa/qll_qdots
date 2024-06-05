@@ -125,94 +125,95 @@ class RandomExpDesign(eqx.Module):
 #
 
 
-class MaxTraceFimExpDesign(eqx.Module):
-    t_min: float
-    t_max: float
-    sgd_iter: int
-    lr: float
-
-    def __init__(self, t_min, t_max, sgd_iter, lr, *args, **kwargs) -> None:
-        self.t_min = t_min
-        self.t_max = t_max
-        self.sgd_iter = sgd_iter
-        self.lr = lr
-
-    # @jit
-    def utility_fun(self, model):
-        return lambda *args, **kwargs: jnp.trace(model.fim(*args, **kwargs))
-
-    # @jit
-    # def optimize_utility_function(
-    #     self, t, particle, model, initial_state, **kwargs
-    # ):
-    #     def grad_f(t):
-    #         return -jax.grad(self.utility_fun(model), 1)(
-    #             particle, t, initial_state
-    #         )
-
-    #     # grad_f = lambda t: -jax.grad(self.utility_fun(model), 1)(
-    #     #     particle, t, initial_state
-    #     # )
-
-    #     solver = optax.adam(learning_rate=self.lr)
-    #     params = t
-    #     opt_state = solver.init(params)
-
-    #     for _ in range(10):
-    #         grad = grad_f(params)
-    #         updates, opt_state = solver.update(grad, opt_state, params)
-    #         params = optax.apply_updates(params, updates)
-    #     return params
-
-    @jit
-    def optimize_utility_function(self, t, particle, model, initial_state, **kwargs):
-        def grad_f(t):
-            return -jax.grad(self.utility_fun(model), 1)(particle, t, initial_state)
-
-        def f_for_scan(carry, x):
-            params, opt_state = carry
-            grad = grad_f(params)
-            updates, opt_state = solver.update(grad, opt_state, params)
-            params = optax.apply_updates(params, updates)
-            return [params, opt_state], params
-
-        # grad_f = lambda t: -jax.grad(self.utility_fun(model), 1)(
-        #     particle, t, initial_state
-        # )
-
-        solver = optax.adam(learning_rate=self.lr)
-        params = t
-        opt_state = solver.init(params)
-
-        re = jax.lax.scan(f_for_scan, [params, opt_state], None, length=20)
-        return re[0][0]
-
-    @jit
-    def generate_time(
-        self, key, particles_locations, weights, model, initial_state, *args, **kwargs
-    ):
-        estimated_particles = est_mean(particles_locations, weights)
-        no_candidates = 15
-
-        key, subkey = jax.random.split(key)
-
-        times_candidates = jax.random.uniform(
-            subkey,
-            shape=(no_candidates,),
-            minval=self.t_min,
-            maxval=self.t_max,
-        )
-
-        times_optimized = jax.vmap(
-            lambda t: self.optimize_utility_function(
-                t, estimated_particles, model, initial_state
-            )
-        )(times_candidates)
-
-        utilities = jax.vmap(
-            lambda t: (self.utility_fun(model)(estimated_particles, t, initial_state)),
-        )(times_optimized)
-        return times_optimized[jnp.argmax(utilities)]
+# class MaxTraceFimExpDesign(eqx.Module):
+#     t_min: float
+#     t_max: float
+#     sgd_iter: int
+#     lr: float
+#
+#     def __init__(self, t_min, t_max, sgd_iter, lr, *args, **kwargs) -> None:
+#         self.t_min = t_min
+#         self.t_max = t_max
+#         self.sgd_iter = sgd_iter
+#         self.lr = lr
+#
+#     # @jit
+#     def utility_fun(self, model):
+#         return lambda *args, **kwargs: jnp.trace(model.fim(*args, **kwargs))
+#
+#     # @jit
+#     # def optimize_utility_function(
+#     #     self, t, particle, model, initial_state, **kwargs
+#     # ):
+#     #     def grad_f(t):
+#     #         return -jax.grad(self.utility_fun(model), 1)(
+#     #             particle, t, initial_state
+#     #         )
+#
+#     #     # grad_f = lambda t: -jax.grad(self.utility_fun(model), 1)(
+#     #     #     particle, t, initial_state
+#     #     # )
+#
+#     #     solver = optax.adam(learning_rate=self.lr)
+#     #     params = t
+#     #     opt_state = solver.init(params)
+#
+#     #     for _ in range(10):
+#     #         grad = grad_f(params)
+#     #         updates, opt_state = solver.update(grad, opt_state, params)
+#     #         params = optax.apply_updates(params, updates)
+#     #     return params
+#
+#     @jit
+#     def optimize_utility_function(self, t, particle, model, initial_state, **kwargs):
+#         def grad_f(t):
+#             return -jax.grad(self.utility_fun(model), 1)(particle, t, initial_state)
+#
+#         def f_for_scan(carry, x):
+#             params, opt_state = carry
+#             grad = grad_f(params)
+#             updates, opt_state = solver.update(grad, opt_state, params)
+#             params = optax.apply_updates(params, updates)
+#             return [params, opt_state], params
+#
+#         # grad_f = lambda t: -jax.grad(self.utility_fun(model), 1)(
+#         #     particle, t, initial_state
+#         # )
+#
+#         solver = optax.adam(learning_rate=self.lr)
+#         params = t
+#         opt_state = solver.init(params)
+#
+#         re = jax.lax.scan(f_for_scan, [params, opt_state], None, length=20)
+#         return re[0][0]
+#
+#     @jit
+#     def generate_time(
+#         self, key, particles_locations, weights, model, initial_state, *args, **kwargs
+#     ):
+#         estimated_particles = est_mean(particles_locations, weights)
+#         no_candidates = 15
+#
+#         key, subkey = jax.random.split(key)
+#
+#         times_candidates = jax.random.uniform(
+#             subkey,
+#             shape=(no_candidates,),
+#             minval=self.t_min,
+#             maxval=self.t_max,
+#         )
+#
+#         times_optimized = jax.vmap(
+#             lambda t: self.optimize_utility_function(
+#                 t, estimated_particles, model, initial_state
+#             )
+#         )(times_candidates)
+#
+#         utilities = jax.vmap(
+#             lambda t: (self.utility_fun(model)(estimated_particles, t, initial_state)),
+#         )(times_optimized)
+#         return times_optimized[jnp.argmax(utilities)]
+#
 
 
 class MaxDetFimExpDesign(eqx.Module):
@@ -279,6 +280,70 @@ class MaxDetFimExpDesign(eqx.Module):
         return times_optimized[jnp.argmax(utilities)]
 
 
+class MaxTraceFimExpDesign(eqx.Module):
+    t_min: float
+    t_max: float
+    sgd_iter: int
+    lr: float
+
+    def __init__(self, t_min, t_max, sgd_iter, lr) -> None:
+        self.t_min = t_min
+        self.t_max = t_max
+        self.sgd_iter = sgd_iter
+        self.lr = lr
+
+    # @jit
+    def optimize_utility_function(self, model, t, **kwargs):
+        loss_function = lambda t: -1 * jnp.trace(model.fim(t=t, **kwargs))
+
+        grad_f = jax.grad(loss_function)
+
+        def f_for_scan(carry, _):
+            params, opt_state = carry
+            grad = grad_f(params)
+            updates, opt_state = solver.update(grad, opt_state, params)
+            params = optax.apply_updates(params, updates)
+            return [params, opt_state], _
+
+        solver = optax.adam(learning_rate=self.lr)
+        params = t
+        opt_state = solver.init(params)
+
+        re, _ = jax.lax.scan(f_for_scan, [params, opt_state], None, length=3)
+        return re[0]
+
+    #
+    @jit
+    def generate_time(self, key, particles_locations, weights, model, **kwargs):
+        est_particle = _est_mean(particles_locations, weights)
+
+        util_fun = lambda t: 1 * jnp.trace(
+            model.fim(t=t, particle=est_particle, **kwargs)
+        )
+
+        no_candidates = 10
+
+        key, subkey = jax.random.split(key)
+
+        times_candidates = jax.random.uniform(
+            subkey,
+            shape=(no_candidates,),
+            minval=self.t_min,
+            maxval=self.t_max,
+        )
+
+        times_optimized = jax.vmap(
+            lambda t: self.optimize_utility_function(
+                model=model, t=t, particle=est_particle, **kwargs
+            )
+        )(times_candidates)
+
+        utilities = jax.vmap(
+            lambda t: (util_fun(t)),
+        )(times_optimized)
+        return times_optimized[jnp.argmax(utilities)]
+
+
 class OptimizeInitialStateMeasurements(eqx.Module):
     lr: int
     iter: int
@@ -303,7 +368,54 @@ class OptimizeInitialStateMeasurements(eqx.Module):
             )
             return loss
 
-        optimizer = optax.sgd(learning_rate=self.lr)
+        # optimizer = optax.sgd(learning_rate=self.lr)
+        optimizer = optax.adam(learning_rate=self.lr)
+
+        params = {"state": dist_initial_state, "measurement": dist_measurement_basis}
+        opt_state = optimizer.init(params)
+
+        def f_for_scan(carry, _):
+            params, opt_state = carry
+            grad = jax.grad(loss_function)(params, **kwargs)
+            updates, opt_state = optimizer.update(grad, opt_state, params)
+            params = optax.apply_updates(params, updates)
+            params["state"] = optax.projections.projection_simplex(params["state"])
+            params["measurement"] = optax.projections.projection_simplex(
+                params["measurement"]
+            )
+
+            return [params, opt_state], _
+
+        re, _ = jax.lax.scan(f_for_scan, [params, opt_state], None, length=self.iter)
+        return re[0]["state"], re[0]["measurement"]
+
+
+class OptimizeInitialStateMeasurementsTrace(eqx.Module):
+    lr: int
+    iter: int
+
+    def __init__(self, lr=0.1, iter=5):
+        self.lr = lr
+        self.iter = iter
+
+    def optimize_probability_distribution(
+        self, dist_initial_state, dist_measurement_basis, **kwargs
+    ):
+        def loss_function(params, model, **kwargs):
+            p_initial_state = params["state"]
+            p_measurement_basis = params["measurement"]
+
+            loss = -1 * jnp.trace(
+                model.fim(
+                    prob_initial_state=p_initial_state,
+                    prob_measurement_basis=p_measurement_basis,
+                    **kwargs
+                )
+            )
+            return loss
+
+        # optimizer = optax.sgd(learning_rate=self.lr)
+        optimizer = optax.adam(learning_rate=self.lr)
 
         params = {"state": dist_initial_state, "measurement": dist_measurement_basis}
         opt_state = optimizer.init(params)
