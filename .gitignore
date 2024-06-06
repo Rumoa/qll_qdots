@@ -53,7 +53,7 @@ results/run_2024-01-02_17:58:59_model.job
 results/run_2024-01-02_17:58:59_results.job
 results/run_2024-01-02_18:33:28_model.job
 results/run_2024-01-02_18:33:28_results.job
-draft_compute_fim_time.ipynb
+old_scripts/draft_compute_fim_time.ipynb
 results/run_2024-01-04_17:12:39_model.job
 results/run_2024-01-04_17:12:39_results.job
 results/run_2024-01-05_17:35:03_model.job
@@ -95,22 +95,22 @@ results/run_2024-03-11_16:10:16_model.job
 results/run_2024-03-11_16:10:16_results.job
 results/run_2024-03-11_17:03:46_model.job
 results/run_2024-03-11_17:03:46_results.job
-checking_output_is_correct.ipynb
-parallelizing_cpus.ipynb
+old_scripts/checking_output_is_correct.ipynb
+old_scripts/parallelizing_cpus.ipynb
 
 several_runs_no_choi.py
 several_runs_no_time_optimization.py
 several_runs_time_optimization_determinant.py
 several_runs_time_optimization.py
 several_runs.py
-cacharreo.ipynb
-testing_expdesign.ipynb
+old_scripts/cacharreo.ipynb
+old_scripts/testing_expdesign.ipynb
 results_cluster/run_2024-03-15_16:05:15_results.job
-analyzing_compilation.ipynb
+old_scripts/analyzing_compilation.ipynb
 results/run_2024-03-28_16:28:48.log
 results/run_2024-03-28_16:29:21.log
 results/run_2024-03-28_16:31:39.log
-firt_results3_params.job
+joblib_files/firt_results3_params.job
 results_cluster/one_qdot/run_2024-04-01_11:11:06_results.job
 results_cluster/one_qdot/run_2024-03-28_18:03:55_results.job
 results_cluster/one_qdot/run_2024-03-28_17:20:33_results.job
@@ -118,3 +118,6 @@ results_cluster/one_qdot/run_2024-03-28_16:45:32_results.job
 results_cluster/one_qdot/run_2024-03-28_16:45:02_results.job
 results_cluster/one_qdot/run_2024-03-28_16:43:31_results.job
 results/run_2024-03-28_16:31:39_results.job
+
+
+/joblib_files/
