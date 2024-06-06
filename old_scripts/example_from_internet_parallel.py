@@ -51,7 +51,7 @@ logging.basicConfig(
 )
 
 
-with open("job.toml", "rb") as f:
+with open("../job.toml", "rb") as f:
     config = tomllib.load(f)
 
 
@@ -102,9 +102,9 @@ smcupdater = SMCUpdater(
 )
 
 # ----------------------------------------------------------#
-keys_for_compilation = jax.random.split(
-    subkey, number_of_runs_compilation
-).reshape(no_cores, -1, 2)
+keys_for_compilation = jax.random.split(subkey, number_of_runs_compilation).reshape(
+    no_cores, -1, 2
+)
 
 initial_runs_compilation = jax.pmap(
     lambda key: initial_run_from_config(

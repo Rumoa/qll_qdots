@@ -31,14 +31,12 @@ from qdots_qll.utils.generate_initial_state import max_entangled_dm_vec
 from pprint import pformat
 
 
-with open("job.toml", "rb") as f:
+with open("../job.toml", "rb") as f:
     config = tomllib.load(f)
 
 
 number_of_runs = int(config["run"]["number_of_runs"])
-number_of_runs_compilation = int(
-    config["run_for_compilation"]["number_of_runs"]
-)
+number_of_runs_compilation = int(config["run_for_compilation"]["number_of_runs"])
 
 print(number_of_runs)
 print(number_of_runs_compilation)
@@ -121,9 +119,7 @@ def f_parallel_runs(key):
 
 
 with parallel_config(backend="threading", n_jobs=80):
-    result = Parallel()(
-        delayed(f_parallel_runs)(i) for i in list(keys_for_runs)
-    )
+    result = Parallel()(delayed(f_parallel_runs)(i) for i in list(keys_for_runs))
 
 
 print(result)
