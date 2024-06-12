@@ -77,7 +77,7 @@ def f_scan(carry, _):
     key, pdist, p_initial_state, p_measurement_basis = carry
     key, subkey = jax.random.split(key)
 
-    t = jax.random.uniform(key=subkey, minval=0.01, maxval=50.0)
+    t = jax.random.uniform(key=subkey, minval=5.0, maxval=60.0)
     # times_list.append(t)
 
     new_prob_initial_state, new_prob_measurement_basis = eqx.filter_jit(
@@ -118,7 +118,9 @@ def f_scan(carry, _):
     )
     # outcomes_list.append(outcome)
 
-    lkl_particles = jax.vmap(select_lkl_outcome, in_axes=(0, None, None, None, None))(
+    lkl_particles = jax.vmap(
+        select_lkl_outcome, in_axes=(0, None, None, None, None)
+    )(
         pdist.particles_locations,
         outcome,
         t,
@@ -152,7 +154,9 @@ def tree_unstack(tree):
 
 
 def transpose_results(pytree):
-    return tree_stack(list(map(list, zip(*tree_unstack(tree_unstack(pytree))))))
+    return tree_stack(
+        list(map(list, zip(*tree_unstack(tree_unstack(pytree)))))
+    )
 
 
 init_time = datetime.today().strftime("%Y-%m-%d_%H-%M-%S")
@@ -178,13 +182,13 @@ boundaries = jnp.array(
 seed = 2
 no_particles = 250
 
-no_runs = 50
-no_max_iterations = 10000
+no_runs = 100  # before 50
+no_max_iterations = 100000  # before 10000
 
 mus = boundaries.mean(axis=1)
 sigmas = jnp.abs((boundaries[:, 0] - boundaries[:, 1]) / (2 * 1))
 
-popt = OptimizeInitialStateMeasurements(iter=4, lr=0.05)
+popt = OptimizeInitialStateMeasurements(iter=5, lr=10)
 expdesign = MaxDetFimExpDesign(t_min=0.01, t_max=45.0, sgd_iter=4, lr=0.01)
 resampler = LWResamplerBounds(a=0.98, parameters_bounds=boundaries)
 
@@ -206,7 +210,10 @@ no_initial_states = 4
 no_measurement_basis = 3
 p_initial_state = jnp.ones(no_initial_states) / no_initial_states
 p_measurement_basis = jnp.ones(no_measurement_basis) / no_measurement_basis
-new_p_initial_state, new_p_measurement_basis = p_initial_state, p_measurement_basis
+new_p_initial_state, new_p_measurement_basis = (
+    p_initial_state,
+    p_measurement_basis,
+)
 
 f_scan_mapped = jax.vmap(f_scan, in_axes=(0, None))
 

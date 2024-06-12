@@ -23,25 +23,25 @@ if [ $? -ne 0 ]; then
   exit 1
 fi
 
-# Run the third program
-python run_trace_fully_adaptive.py
+# # Run the third program
+# python run_trace_fully_adaptive.py
 
-# Check if the third program finished successfully
-if [ $? -ne 0 ]; then
-  echo "Third program failed"
-  exit 1
-fi
+# # Check if the third program finished successfully
+# if [ $? -ne 0 ]; then
+#   echo "Third program failed"
+#   exit 1
+# fi
 
 
 
-# Run the third program
-python run_vanilla.py
+# # Run the third program
+# python run_vanilla.py
 
-# Check if the third program finished successfully
-if [ $? -ne 0 ]; then
-  echo "Fourth program failed"
-  exit 1
-fi
+# # Check if the third program finished successfully
+# if [ $? -ne 0 ]; then
+#   echo "Fourth program failed"
+#   exit 1
+# fi
 
 
 

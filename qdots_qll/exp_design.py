@@ -16,7 +16,9 @@ class RandomExpDesign(eqx.Module):
 
     @jit
     def generate_time(self, key, *args, **kwargs):
-        return jax.random.uniform(key=key, minval=self.t_min, maxval=self.t_max)
+        return jax.random.uniform(
+            key=key, minval=self.t_min, maxval=self.t_max
+        )
 
 
 # class MaxDetFimExpDesign(eqx.Module):
@@ -250,7 +252,9 @@ class MaxDetFimExpDesign(eqx.Module):
 
     #
     @jit
-    def generate_time(self, key, particles_locations, weights, model, **kwargs):
+    def generate_time(
+        self, key, particles_locations, weights, model, **kwargs
+    ):
         est_particle = _est_mean(particles_locations, weights)
 
         util_fun = lambda t: 1 * jnp.linalg.det(
@@ -314,7 +318,9 @@ class MaxTraceFimExpDesign(eqx.Module):
 
     #
     @jit
-    def generate_time(self, key, particles_locations, weights, model, **kwargs):
+    def generate_time(
+        self, key, particles_locations, weights, model, **kwargs
+    ):
         est_particle = _est_mean(particles_locations, weights)
 
         util_fun = lambda t: 1 * jnp.trace(
@@ -371,7 +377,10 @@ class OptimizeInitialStateMeasurements(eqx.Module):
         # optimizer = optax.sgd(learning_rate=self.lr)
         optimizer = optax.adam(learning_rate=self.lr)
 
-        params = {"state": dist_initial_state, "measurement": dist_measurement_basis}
+        params = {
+            "state": dist_initial_state,
+            "measurement": dist_measurement_basis,
+        }
         opt_state = optimizer.init(params)
 
         def f_for_scan(carry, _):
@@ -379,14 +388,71 @@ class OptimizeInitialStateMeasurements(eqx.Module):
             grad = jax.grad(loss_function)(params, **kwargs)
             updates, opt_state = optimizer.update(grad, opt_state, params)
             params = optax.apply_updates(params, updates)
-            params["state"] = optax.projections.projection_simplex(params["state"])
+            params["state"] = optax.projections.projection_simplex(
+                params["state"]
+            )
             params["measurement"] = optax.projections.projection_simplex(
                 params["measurement"]
             )
 
             return [params, opt_state], _
 
-        re, _ = jax.lax.scan(f_for_scan, [params, opt_state], None, length=self.iter)
+        re, _ = jax.lax.scan(
+            f_for_scan, [params, opt_state], None, length=self.iter
+        )
+        return re[0]["state"], re[0]["measurement"]
+
+
+class OptimizeInitialStateMeasurementsNoProjection(eqx.Module):
+    lr: int
+    iter: int
+
+    def __init__(self, lr=0.1, iter=5):
+        self.lr = lr
+        self.iter = iter
+
+    def optimize_probability_distribution(
+        self, dist_initial_state, dist_measurement_basis, **kwargs
+    ):
+        def loss_function(params, model, **kwargs):
+            p_initial_state = params["state"]
+            p_measurement_basis = params["measurement"]
+
+            loss = -1 * jnp.linalg.det(
+                model.fim(
+                    prob_initial_state=p_initial_state,
+                    prob_measurement_basis=p_measurement_basis,
+                    **kwargs
+                )
+            )
+            return loss
+
+        # optimizer = optax.sgd(learning_rate=self.lr)
+        optimizer = optax.adam(learning_rate=self.lr)
+
+        params = {
+            "state": dist_initial_state,
+            "measurement": dist_measurement_basis,
+        }
+        opt_state = optimizer.init(params)
+
+        def f_for_scan(carry, _):
+            params, opt_state = carry
+            grad = jax.grad(loss_function)(params, **kwargs)
+            updates, opt_state = optimizer.update(grad, opt_state, params)
+            params = optax.apply_updates(params, updates)
+            # params["state"] = optax.projections.projection_simplex(
+            #     params["state"]
+            # )
+            # params["measurement"] = optax.projections.projection_simplex(
+            #     params["measurement"]
+            # )
+
+            return [params, opt_state], _
+
+        re, _ = jax.lax.scan(
+            f_for_scan, [params, opt_state], None, length=self.iter
+        )
         return re[0]["state"], re[0]["measurement"]
 
 
@@ -417,7 +483,10 @@ class OptimizeInitialStateMeasurementsTrace(eqx.Module):
         # optimizer = optax.sgd(learning_rate=self.lr)
         optimizer = optax.adam(learning_rate=self.lr)
 
-        params = {"state": dist_initial_state, "measurement": dist_measurement_basis}
+        params = {
+            "state": dist_initial_state,
+            "measurement": dist_measurement_basis,
+        }
         opt_state = optimizer.init(params)
 
         def f_for_scan(carry, _):
@@ -425,12 +494,16 @@ class OptimizeInitialStateMeasurementsTrace(eqx.Module):
             grad = jax.grad(loss_function)(params, **kwargs)
             updates, opt_state = optimizer.update(grad, opt_state, params)
             params = optax.apply_updates(params, updates)
-            params["state"] = optax.projections.projection_simplex(params["state"])
+            params["state"] = optax.projections.projection_simplex(
+                params["state"]
+            )
             params["measurement"] = optax.projections.projection_simplex(
                 params["measurement"]
             )
 
             return [params, opt_state], _
 
-        re, _ = jax.lax.scan(f_for_scan, [params, opt_state], None, length=self.iter)
+        re, _ = jax.lax.scan(
+            f_for_scan, [params, opt_state], None, length=self.iter
+        )
         return re[0]["state"], re[0]["measurement"]
