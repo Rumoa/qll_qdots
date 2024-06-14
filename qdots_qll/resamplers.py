@@ -23,7 +23,9 @@ def is_valid_particle_array_version(particle, boundaries):
 def is_valid_particle(particle, boundaries):
     particle = jnp.atleast_2d(particle)
     return jnp.bool(
-        ((boundaries[:, 1] > particle) * (boundaries[:, 0] <= particle)).T.prod(axis=0)
+        (
+            (boundaries[:, 1] > particle) * (boundaries[:, 0] <= particle)
+        ).T.prod(axis=0)
     )[0]
 
 
@@ -88,7 +90,9 @@ class LWResamplerBounds(eqx.Module):
         )
 
     @jax.jit
-    def resample_one_particle(self, key, particles_locations, weights, mu, sigma):
+    def resample_one_particle(
+        self, key, particles_locations, weights, mu, sigma
+    ):
         key, candidate = self.propose_new_particle(
             key, particles_locations, weights, mu, sigma
         )
@@ -114,11 +118,15 @@ class LWResamplerBounds(eqx.Module):
 
         return key, candidate, iteration
 
-    def propose_new_particle(self, key, particles_locations, weights, mu, sigma):
+    def propose_new_particle(
+        self, key, particles_locations, weights, mu, sigma
+    ):
         key, subkey = jax.random.split(key)
         new_mu_particle = (
             self.a
-            * jax.random.choice(subkey, particles_locations, shape=(1,), p=weights)
+            * jax.random.choice(
+                subkey, particles_locations, shape=(1,), p=weights
+            )
             + (1 - self.a) * mu
         )
         key, subkey = jax.random.split(key)
