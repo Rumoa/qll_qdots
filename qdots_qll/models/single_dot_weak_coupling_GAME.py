@@ -1,16 +1,13 @@
-from qdots_qll.models.models_scratch_for_drafting import BaseClassDimension
 import jax
 import jax.numpy as jnp
 import numpy as np
 import qutip as qt
-
-from jax.scipy.linalg import expm
-
 from jax import jit
-
-from jaxtyping import Array, Float, Complex, Int, Real
+from jax.scipy.linalg import expm
+from jaxtyping import Array, Complex, Float, Int, Real
 
 import qdots_qll.models.quantum_utils
+from qdots_qll.models.models_scratch_for_drafting import BaseClassDimension
 
 # These parameters are related to the ones used in the paper:
 # [1] A. Nazir and D. P. S. McCutcheon, Modelling Exciton-Phonon Interactions
@@ -278,3 +275,39 @@ class SingleDotWeakCouplingGAME(BaseClassDimension):
             key, a=jnp.arange(no_outcomes), p=probability_given_state_and_basis
         )
         return jnp.array([initial_state_index, measurement_basis_index, outcome])
+
+    def lkl_outcome_one_experiment(self, particle, experiment):
+        time, init_state, basis = experiment
+        return self.likelihood_particle(particle, time)[
+            (init_state.astype(int)), (basis.astype(int))
+        ]
+
+    def measure_one_experiment(self, subkey, particle, experiment):
+        lkl = self.lkl_outcome_one_experiment(particle, experiment)
+        return jax.random.choice(subkey, jnp.array([0, 1]), p=lkl)
+
+    def log_lkl_single_datum(self, particle, datum):
+        time, init_state, basis, outcome = datum
+        lkl = self.lkl_outcome_one_experiment(
+            particle=particle, experiment=jnp.array([time, init_state, basis])
+        )[outcome.astype(int)]
+        loglkl = jnp.log(lkl)
+        return loglkl
+
+    # def total_log_lkl(self, particle, data):
+    #     loglkl_arr = jax.vmap(self.log_lkl_single_datum, in_axes=(None, 0))(
+    #         particle, data
+    #     )
+    #     return loglkl_arr.sum() - jnp.max(loglkl_arr)
+    def total_log_lkl(self, particle, data):
+        def f_for_scan(carry, x):
+            datum = x
+            loglkl_datum = self.log_lkl_single_datum(particle, datum)
+            carry = carry + loglkl_datum
+            return carry, loglkl_datum
+
+        sum_log_lkl, array_log_lkl_datum = jax.lax.scan(f_for_scan, init=0, xs=data)
+        return sum_log_lkl - jnp.max(array_log_lkl_datum)
+
+    def batch_total_log_lkl(self, particles, data):
+        return jax.vmap(self.total_log_lkl, in_axes=(0, None))(particles, data)

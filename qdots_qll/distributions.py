@@ -1,8 +1,7 @@
+import equinox as eqx
 import jax
 import jax.numpy as jnp
-
-from jaxtyping import Array, Float, Complex, Int
-import equinox as eqx
+from jaxtyping import Array, Complex, Float, Int
 
 
 def _est_mean(particles_locations, weights, **kwargs):
@@ -36,12 +35,14 @@ def update_weights(dist, new_lkl):
     get_weights = lambda t: t.weights
     new_weights = dist.weights * new_lkl
     new_weights = new_weights / new_weights.sum()
-    return eqx.tree_at(get_weights, dist, replace=new_weights)
+    return eqx.tree_at(where=get_weights, pytree=dist, replace=new_weights)
 
 
 def update_particles_locations(dist, new_particles_locations):
     get_particles_locations = lambda t: t.particles_locations
-    return eqx.tree_at(get_particles_locations, dist, replace=new_particles_locations)
+    return eqx.tree_at(
+        where=get_particles_locations, pytree=dist, replace=new_particles_locations
+    )
 
 
 class Distribution(eqx.Module):
@@ -59,17 +60,21 @@ class Distribution(eqx.Module):
     def ev(
         self,
     ):
-        return _est_mean(self.particles_locations, self.weights)
+        return _est_mean(
+            particles_locations=self.particles_locations, weights=self.weights
+        )
 
     def cov(
         self,
     ):
-        return _est_cov(self.particles_locations, self.weights)
+        return _est_cov(
+            particles_locations=self.particles_locations, weights=self.weights
+        )
 
     def ESS(self):
-        return _ESS(self.weights)
+        return _ESS(weights=self.weights)
 
-    def check_resampling(self, resampling_threshold=0.5):
+    def check_resampling(self, resampling_threshold=0.5) -> Array:
         return self.ESS() <= resampling_threshold * self.no_particles
 
 
