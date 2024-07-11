@@ -8,6 +8,7 @@ from jaxtyping import Array, Complex, Float, Int, Real
 
 import qdots_qll.models.quantum_utils
 from qdots_qll.models.models_scratch_for_drafting import BaseClassDimension
+import equinox as eqx
 
 # These parameters are related to the ones used in the paper:
 # [1] A. Nazir and D. P. S. McCutcheon, Modelling Exciton-Phonon Interactions
@@ -84,6 +85,67 @@ initial_states = [zero, one, plus, minus]
 initial_states_dm = jnp.array([qt.ket2dm(i).full() for i in initial_states])
 
 initial_states_bloch = jax.vmap(rho_to_bloch)(initial_states_dm)
+
+
+class Data(eqx.Module):
+    experiment: eqx.Module
+    outcome: int
+
+    def __init__(self, experiment, outcome) -> None:
+        self.experiment = experiment
+        self.outcome = ensure_array(outcome)
+
+    def __iter__(self):
+        for experiment, outcome in zip(self.experiment, self.outcome):
+            yield Data(experiment, outcome)
+
+    def __getitem__(self, item):
+        return Data(self.experiment[item], self.outcome[item])
+
+    def __len__(self):
+        return len(self.outcome)
+
+    def __str__(self):
+        s = f"Experiment: {self.experiment}\noutcome: {self.outcome}"
+        return s
+
+
+def ensure_array(array):
+    array = jnp.array(array)
+    if array.shape == ():
+        return jnp.array([array])
+    return array
+
+
+class ExperimentSingleDotWeakCouplingGAME(eqx.Module):
+    time: float
+    initial_state: int
+    measurement_basis: int
+
+    def __init__(self, t: float, initial_state: int, measurement_basis: int) -> None:
+        self.time = ensure_array(t)
+        self.initial_state = ensure_array(initial_state)
+        self.measurement_basis = ensure_array(measurement_basis)
+
+    def __len__(self):
+        return len(self.time)
+
+    def __iter__(self):
+        for i in range(len(self)):
+            yield ExperimentSingleDotWeakCouplingGAME(
+                self.time[i], self.initial_state[i], self.measurement_basis[i]
+            )
+        # for t in self.time:
+        #     yield Experiment(t)
+
+    def __getitem__(self, item):
+        return ExperimentSingleDotWeakCouplingGAME(
+            self.time[item], self.initial_state[item], self.measurement_basis[item]
+        )
+
+    def __str__(self):
+        s = f"Time {self.time}\nInitial state {self.initial_state}\nMeasurement basis {self.measurement_basis} "
+        return s
 
 
 class SingleDotWeakCouplingGAME(BaseClassDimension):
@@ -276,21 +338,29 @@ class SingleDotWeakCouplingGAME(BaseClassDimension):
         )
         return jnp.array([initial_state_index, measurement_basis_index, outcome])
 
-    def lkl_outcome_one_experiment(self, particle, experiment):
-        time, init_state, basis = experiment
+    def lkl_outcome_one_experiment(
+        self, particle, experiment: ExperimentSingleDotWeakCouplingGAME
+    ):
+        time = jnp.squeeze(experiment.time)
+        init_state = jnp.squeeze(experiment.initial_state)
+        basis = jnp.squeeze(experiment.measurement_basis)
         return self.likelihood_particle(particle, time)[
             (init_state.astype(int)), (basis.astype(int))
         ]
 
-    def measure_one_experiment(self, subkey, particle, experiment):
+    def measure_one_experiment(
+        self, subkey, particle, experiment: ExperimentSingleDotWeakCouplingGAME
+    ):
         lkl = self.lkl_outcome_one_experiment(particle, experiment)
         return jax.random.choice(subkey, jnp.array([0, 1]), p=lkl)
 
-    def log_lkl_single_datum(self, particle, datum):
-        time, init_state, basis, outcome = datum
-        lkl = self.lkl_outcome_one_experiment(
-            particle=particle, experiment=jnp.array([time, init_state, basis])
-        )[outcome.astype(int)]
+    def log_lkl_single_datum(self, particle, datum: Data):
+        experiment = datum.experiment
+        outcome = datum.outcome
+
+        lkl = self.lkl_outcome_one_experiment(particle=particle, experiment=experiment)[
+            outcome.astype(int)
+        ]
         loglkl = jnp.log(lkl)
         return loglkl
 
@@ -299,7 +369,7 @@ class SingleDotWeakCouplingGAME(BaseClassDimension):
     #         particle, data
     #     )
     #     return loglkl_arr.sum() - jnp.max(loglkl_arr)
-    def total_log_lkl(self, particle, data):
+    def total_log_lkl(self, particle, data: Data):
         def f_for_scan(carry, x):
             datum = x
             loglkl_datum = self.log_lkl_single_datum(particle, datum)
@@ -309,5 +379,5 @@ class SingleDotWeakCouplingGAME(BaseClassDimension):
         sum_log_lkl, array_log_lkl_datum = jax.lax.scan(f_for_scan, init=0, xs=data)
         return sum_log_lkl - jnp.max(array_log_lkl_datum)
 
-    def batch_total_log_lkl(self, particles, data):
+    def batch_total_log_lkl(self, particles, data: Data):
         return jax.vmap(self.total_log_lkl, in_axes=(0, None))(particles, data)
