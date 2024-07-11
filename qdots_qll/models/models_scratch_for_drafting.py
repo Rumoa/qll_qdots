@@ -1,24 +1,17 @@
+import equinox as eqx
 import jax
 import jax.numpy as jnp
-
-# from qdots_qll.models.game import *
-
-import qutip as qt
-
+import jax.typing
 import matplotlib.pyplot as plt
 
-from qbism import sic_povm
+# from qdots_qll.models.game import *
+import qutip as qt
+from jax import Array, jit
 from jax.scipy.linalg import expm
-import jax.typing
-
-import equinox as eqx
-
-
-from jax import Array
-from jax import jit
 
 # from jax.typing import ArrayLike
-from jaxtyping import Array, Float, Complex, Int
+from jaxtyping import Array, Complex, Float, Int
+from qbism import sic_povm
 
 # seed = 3
 # rho_ex = qt.rand_dm_ginibre(2, seed=seed)
@@ -75,7 +68,6 @@ def compute_P_superop(
     evolved_state_vec: Complex[Array, "d**2"],
     POVM_element_vec: Complex[Array, "d**2"],
 ):
-
     return check_nan(jnp.real(jnp.dot(dag(POVM_element_vec), evolved_state_vec)))
 
 
@@ -84,7 +76,6 @@ def compute_P_matrix_ver(
     evolved_state: Complex[Array, "d d"],
     POVM_element: Complex[Array, "d d"],
 ):
-
     return check_nan(jnp.real(jnp.trace(evolved_state @ POVM_element)))
 
 
@@ -114,7 +105,7 @@ class single_qdot(BaseClassDimension):
 
     @jit
     def make_liouvillian(
-        self, particle: Float[Array, "number_of_parameters"]
+        self, particle: Float[Array, " number_of_parameters"]
     ) -> Complex[Array, "d**2 d**2"]:
         gn, gp, Sn, Sp = particle
         Snot = -self.delta
@@ -162,10 +153,10 @@ class single_qdot(BaseClassDimension):
     @jit
     def likelihood_particle(
         self,
-        particle: Float[Array, "number_of_parameters"],
+        particle: Float[Array, " number_of_parameters"],
         t: Float,
-        initial_state: Complex[Array, "d**2"],
-    ) -> Float[Array, "no_outcomes"]:
+        initial_state: Complex[Array, " d**2"],
+    ) -> Float[Array, " no_outcomes"]:
         liouvillian = self.make_liouvillian(particle)
         evolved_state_vec = self.evolve_initial_state_liouvillian(
             t, liouvillian, initial_state
@@ -179,7 +170,7 @@ class single_qdot(BaseClassDimension):
     @jit
     def fim(
         self,
-        particle: Complex[Array, "number_of_parameters"],
+        particle: Complex[Array, " number_of_parameters"],
         t: Float,
         initial_state: Complex[Array, "d**2"],
     ) -> Float[Array, "number_of_parameters number_of_parameters"]:
@@ -196,9 +187,9 @@ class single_qdot(BaseClassDimension):
     def generate_data(
         self,
         key: Int[Array, "2"],
-        true_particle: Complex[Array, "number_of_parameters"],
+        true_particle: Complex[Array, " number_of_parameters"],
         t: Float,
-        initial_state: Complex[Array, "d**2"],
+        initial_state: Complex[Array, " d**2"],
     ) -> Int[Array, "1"]:
         probabilities = self.likelihood_particle(true_particle, t, initial_state)
         probabilities = probabilities / probabilities.sum()
@@ -209,11 +200,10 @@ class single_qdot(BaseClassDimension):
     @jit
     def qfim(
         self,
-        particle: Complex[Array, "number_of_parameters"],
+        particle: Complex[Array, " number_of_parameters"],
         t: Float,
         initial_state: Complex[Array, "d**2"],
     ) -> Float[Array, "number_of_parameters number_of_parameters"]:
-
         d = self.matrix_d.shape[0]
         no_parameters = particle.shape[0]
 
@@ -292,9 +282,8 @@ class SingleQDot3Params(BaseClassDimension):
 
     @jit
     def make_liouvillian(
-        self, particle: Float[Array, "number_of_parameters"]
+        self, particle: Float[Array, " number_of_parameters"]
     ) -> Complex[Array, "d**2 d**2"]:
-
         eta = jnp.sqrt(self.Omega**2 + self.delta**2)
         beta = 1 / (0.130920339126989 * self.T)
         gp, Sn, Sp = particle
@@ -344,10 +333,10 @@ class SingleQDot3Params(BaseClassDimension):
     @jit
     def likelihood_particle(
         self,
-        particle: Float[Array, "number_of_parameters"],
+        particle: Float[Array, " number_of_parameters"],
         t: Float,
-        initial_state: Complex[Array, "d**2"],
-    ) -> Float[Array, "no_outcomes"]:
+        initial_state: Complex[Array, " d**2"],
+    ) -> Float[Array, " no_outcomes"]:
         liouvillian = self.make_liouvillian(particle)
         evolved_state_vec = self.evolve_initial_state_liouvillian(
             t, liouvillian, initial_state
@@ -361,7 +350,7 @@ class SingleQDot3Params(BaseClassDimension):
     @jit
     def fim(
         self,
-        particle: Complex[Array, "number_of_parameters"],
+        particle: Complex[Array, " number_of_parameters"],
         t: Float,
         initial_state: Complex[Array, "d**2"],
     ) -> Float[Array, "number_of_parameters number_of_parameters"]:
@@ -395,7 +384,6 @@ class SingleQDot3Params(BaseClassDimension):
         t: Float,
         initial_state: Complex[Array, "d**2"],
     ) -> Float[Array, "number_of_parameters number_of_parameters"]:
-
         d = self.matrix_d.shape[0]
         no_parameters = particle.shape[0]
 
@@ -451,7 +439,6 @@ def compute_P_superop(
     evolved_state_vec: Complex[Array, "d**2"],
     POVM_element_vec: Complex[Array, "d**2"],
 ):
-
     return check_nan(jnp.real(jnp.dot(dag(POVM_element_vec), evolved_state_vec)))
 
 
@@ -460,7 +447,6 @@ def compute_P_matrix_ver(
     evolved_state: Complex[Array, "d d"],
     POVM_element: Complex[Array, "d d"],
 ):
-
     return check_nan(jnp.real(jnp.trace(evolved_state @ POVM_element)))
 
 
@@ -533,7 +519,6 @@ class two_qdots_separable_maps(BaseClassDimension):
         liouvillian: Complex[Array, "2**2 2**2"],
         initial_state: Complex[Array, "4**2"],
     ) -> Complex[Array, "4**2"]:
-
         # This is the tricky part, we take the liouvillian, and then
         # we will apply both exp(L) to each qubit, carefully.
         # Remember the liouvillian is only for one dot
@@ -656,7 +641,6 @@ class two_qdots_separable_maps(BaseClassDimension):
         t: Float,
         initial_state: Complex[Array, "d**2"],
     ) -> Float[Array, "number_of_parameters number_of_parameters"]:
-
         d = self.matrix_d.shape[0]
         no_parameters = particle.shape[0]
 
@@ -713,7 +697,6 @@ class two_qdots_separable_maps(BaseClassDimension):
         t: Float,
         initial_state: Complex[Array, "d**2"],
     ) -> Float[Array, "number_of_parameters number_of_parameters"]:
-
         d = self.matrix_d.shape[0]
         no_parameters = particle.shape[0]
 
@@ -755,7 +738,6 @@ class two_qdots_separable_maps(BaseClassDimension):
         t: Float,
         initial_state: Complex[Array, "d**2"],
     ) -> Float[Array, "number_of_parameters number_of_parameters"]:
-
         d = self.matrix_d.shape[0]
         no_parameters = particle.shape[0]
 
@@ -771,9 +753,7 @@ class two_qdots_separable_maps(BaseClassDimension):
                 t, self.make_one_dot_liouvillian(particle), initial_state
             ),
             holomorphic=True,
-        )(
-            particle.astype(jnp.complex64)
-        ).T  # first index is related to the parameter
+        )(particle.astype(jnp.complex64)).T  # first index is related to the parameter
 
         sld = jnp.einsum(
             "jk, ik -> ij",
@@ -860,7 +840,6 @@ class two_qdots_identity_for_systemB(BaseClassDimension):
         liouvillian: Complex[Array, "2**2 2**2"],
         initial_state: Complex[Array, "4**2"],
     ) -> Complex[Array, "4**2"]:
-
         # This is the tricky part, we take the liouvillian, and then
         # we will apply both exp(L) to each qubit, carefully.
         # Remember the liouvillian is only for one dot
@@ -949,7 +928,6 @@ class two_qdots_identity_for_systemB(BaseClassDimension):
         t: Float,
         initial_state: Complex[Array, "d**2"],
     ) -> Float[Array, "number_of_parameters number_of_parameters"]:
-
         d = self.matrix_d.shape[0]
         no_parameters = particle.shape[0]
 

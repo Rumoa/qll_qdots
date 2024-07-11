@@ -1,3 +1,4 @@
+import equinox as eqx
 import jax
 import jax.numpy as jnp
 import numpy as np
@@ -8,7 +9,7 @@ from jaxtyping import Array, Complex, Float, Int, Real
 
 import qdots_qll.models.quantum_utils
 from qdots_qll.models.models_scratch_for_drafting import BaseClassDimension
-import equinox as eqx
+from qdots_qll.utils.utils import ensure_array
 
 # These parameters are related to the ones used in the paper:
 # [1] A. Nazir and D. P. S. McCutcheon, Modelling Exciton-Phonon Interactions
@@ -87,11 +88,15 @@ initial_states_dm = jnp.array([qt.ket2dm(i).full() for i in initial_states])
 initial_states_bloch = jax.vmap(rho_to_bloch)(initial_states_dm)
 
 
+class Experiment(eqx.Module):
+    pass
+
+
 class Data(eqx.Module):
-    experiment: eqx.Module
+    experiment: Experiment
     outcome: int
 
-    def __init__(self, experiment, outcome) -> None:
+    def __init__(self, experiment: Experiment, outcome) -> None:
         self.experiment = experiment
         self.outcome = ensure_array(outcome)
 
@@ -110,14 +115,7 @@ class Data(eqx.Module):
         return s
 
 
-def ensure_array(array):
-    array = jnp.array(array)
-    if array.shape == ():
-        return jnp.array([array])
-    return array
-
-
-class ExperimentSingleDotWeakCouplingGAME(eqx.Module):
+class ExperimentSingleDotWeakCouplingGAME(Experiment):
     time: float
     initial_state: int
     measurement_basis: int
