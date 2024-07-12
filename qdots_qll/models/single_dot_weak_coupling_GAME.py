@@ -114,6 +114,11 @@ class Data(eqx.Module):
         s = f"Experiment: {self.experiment}\noutcome: {self.outcome}"
         return s
 
+    def append(self, other):
+        updated_experiments = self.experiment.append(other.experiment)
+        updated_outcomes = jnp.append(self.outcome, other.outcome)
+        return Data(experiment=updated_experiments, outcome=updated_outcomes)
+
 
 class ExperimentSingleDotWeakCouplingGAME(Experiment):
     time: float
@@ -144,6 +149,19 @@ class ExperimentSingleDotWeakCouplingGAME(Experiment):
     def __str__(self):
         s = f"Time {self.time}\nInitial state {self.initial_state}\nMeasurement basis {self.measurement_basis} "
         return s
+
+    def append(
+        self, other: "ExperimentSingleDotWeakCouplingGAME"
+    ) -> "ExperimentSingleDotWeakCouplingGAME":
+        def append_if_array(x, y):
+            if isinstance(x, jnp.ndarray):
+                return jnp.append(x, y)
+            return x  # If it's not an array, keep it unchanged
+
+        new_fields = jax.tree_util.tree_map(append_if_array, self, other)
+        return ExperimentSingleDotWeakCouplingGAME(
+            new_fields.time, new_fields.initial_state, new_fields.measurement_basis
+        )
 
 
 class SingleDotWeakCouplingGAME(BaseClassDimension):
@@ -352,6 +370,8 @@ class SingleDotWeakCouplingGAME(BaseClassDimension):
         lkl = self.lkl_outcome_one_experiment(particle, experiment)
         return jax.random.choice(subkey, jnp.array([0, 1]), p=lkl)
 
+    # def measure_experiment(self, subkey, experiment: ExperimentSingleDotWeakCouplingGAME):
+
     def log_lkl_single_datum(self, particle, datum: Data):
         experiment = datum.experiment
         outcome = datum.outcome
@@ -362,11 +382,6 @@ class SingleDotWeakCouplingGAME(BaseClassDimension):
         loglkl = jnp.log(lkl)
         return loglkl
 
-    # def total_log_lkl(self, particle, data):
-    #     loglkl_arr = jax.vmap(self.log_lkl_single_datum, in_axes=(None, 0))(
-    #         particle, data
-    #     )
-    #     return loglkl_arr.sum() - jnp.max(loglkl_arr)
     def total_log_lkl(self, particle, data: Data):
         def f_for_scan(carry, x):
             datum = x
@@ -379,3 +394,9 @@ class SingleDotWeakCouplingGAME(BaseClassDimension):
 
     def batch_total_log_lkl(self, particles, data: Data):
         return jax.vmap(self.total_log_lkl, in_axes=(0, None))(particles, data)
+
+    def log_lkl_datum_multiple_particles(self, particles, datum: Data):
+        loglkl_arr = jax.vmap(self.log_lkl_single_datum, in_axes=(0, None))(
+            particles, datum
+        )
+        return loglkl_arr

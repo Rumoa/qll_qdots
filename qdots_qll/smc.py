@@ -2,23 +2,27 @@
 # TODO: Make things cleaner bc it looks a bit sloppy
 
 
-import jax
-from jax import jit, vmap
-import jax.numpy as jnp
-from qdots_qll.models import game
-import qdots_qll.all_funcs as all_f
 from functools import partial
-from qdots_qll.run import Run
+from importlib.metadata import distribution
+from math import exp
+
 import equinox as eqx
+import jax
+import jax.numpy as jnp
+from jax import jit, vmap
+from jaxtyping import Array
 
-from qdots_qll.times_proposals import fim_time_generator
+import qdots_qll.all_funcs as all_f
 
-from qdots_qll.distributions import SimpleDistribution
+# from qdots_qll.distributions import ESS, SimpleDistribution, est_cov, est_mean
+from qdots_qll.distributions import Distribution, update_log_weights
+from qdots_qll.exp_design import ExperimentalDesign
+from qdots_qll.models import game
+from qdots_qll.models.single_dot_weak_coupling_GAME import Data, Experiment
+from qdots_qll.resamplers import Resampler
 
-
-from qdots_qll.distributions import ESS
-from qdots_qll.distributions import est_mean, est_cov
-from qdots_qll.run import Run
+# from qdots_qll.run import Run
+# from qdots_qll.times_proposals import fim_time_generator
 
 # @jit
 # def _iteration_smc(
@@ -340,332 +344,400 @@ from qdots_qll.run import Run
 # ).cov_array
 
 
-@jit
-def update_array_at(index, arr, new_element):
-    new_arr = arr.at[index].set(new_element)
-    return new_arr
+# @jit
+# def update_array_at(index, arr, new_element):
+#     new_arr = arr.at[index].set(new_element)
+#     return new_arr
+
+
+# class _SMCUpdater(eqx.Module):
+#     model: eqx.Module
+#     exp_design: eqx.Module
+#     resampler: eqx.Module
+#     initial_state: jax.Array
+#     true_pars: jax.Array
+#     number_exp_rep_matrix_shape: jax.Array
+
+#     def __init__(
+#         self,
+#         model,
+#         exp_design,
+#         resampler,
+#         initial_state,
+#         true_pars,
+#         number_exp_repetitions,
+#     ):
+#         self.model = model
+#         self.exp_design = exp_design
+#         self.resampler = resampler
+#         self.initial_state = initial_state
+#         self.true_pars = true_pars
+#         self.number_exp_rep_matrix_shape = jnp.identity(number_exp_repetitions)
+
+#     def likelihood_data(self, lkl_results, result):
+#         return lkl_results[result]
+
+#     def update_weights(self, lkl, weights):
+#         new_weights = lkl * weights
+#         new_weights = new_weights / jnp.sum(new_weights)
+#         return new_weights
+
+#     # @jit
+#     def _iteration_smc_new_weights(
+#         self, key, iteration, particles_locations, weights, *args, **kwargs
+#     ):
+#         key, subkey = jax.random.split(key)
+
+#         t = self.exp_design.generate_time(
+#             key=subkey,
+#             particles_locations=particles_locations,
+#             weights=weights,
+#             model=self.model,
+#             initial_state=self.initial_state,
+#         )
+#         number_of_exp_re = self.number_exp_rep_matrix_shape.shape[0]
+#         keys = jax.random.split(key, number_of_exp_re + 1)
+
+#         key = keys[0]
+
+#         results = jax.vmap(self.model.generate_data, in_axes=(0, None, None, None))(
+#             keys[1:], self.true_pars, t, self.initial_state
+#         )
+
+#         all_lkls = jax.vmap(self.model.likelihood_particle, in_axes=(0, None, None))(
+#             particles_locations, t, self.initial_state
+#         )
+
+#         lkl_results_all_particles = vmap(self.likelihood_data, in_axes=(0, None))(
+#             all_lkls, results
+#         )
+
+#         lkl = jnp.prod(lkl_results_all_particles, axis=1)
+
+#         new_weights = self.update_weights(lkl, weights)
+#         # return key, iteration + 1, particles_locations, new_weights
+
+#         return {
+#             "iteration": iteration + 1,
+#             "key": key,
+#             "weights": new_weights,
+#             "particles_locations": particles_locations,
+#             "time": t,
+#             # self.cov_array,
+#         }
+
+#     # @jit
+#     def _step_force_resampling(self, run_obj):
+#         updated_variables_bf_resampling = self._iteration_smc_new_weights(
+#             **run_obj.return_mutable_attributes()
+#         )
+
+#         updated_variables = jax.lax.cond(
+#             False,
+#             lambda a: a,
+#             lambda a: {**a, **self.resampler.resample(**a)},
+#             updated_variables_bf_resampling,
+#         )
+
+#         index_iter = updated_variables["iteration"]
+#         new_cov_array = update_array_at(
+#             index_iter, run_obj.cov_array, est_cov(**updated_variables)
+#         )
+#         new_estimates_array = update_array_at(
+#             index_iter, run_obj.estimates_array, est_mean(**updated_variables)
+#         )
+#         new_times_array = update_array_at(
+#             index_iter, run_obj.times_array, updated_variables["time"]
+#         )
+
+#         return Run(
+#             **{
+#                 **updated_variables,
+#                 **run_obj.return_immutable_attributes(),
+#                 **{
+#                     "cov_array": new_cov_array,
+#                     "estimates_array": new_estimates_array,
+#                     "times_array": new_times_array,
+#                 },
+#             }
+#         )
+
+#     # @jit
+#     def step(self, run_obj):
+#         updated_variables_bf_resampling = self._iteration_smc_new_weights(
+#             **run_obj.return_mutable_attributes()
+#         )
+
+#         updated_variables = jax.lax.cond(
+#             ESS(updated_variables_bf_resampling["weights"])
+#             > updated_variables_bf_resampling["weights"].shape[0] / 2,
+#             lambda a: a,
+#             lambda a: {**a, **self.resampler.resample(**a)},
+#             updated_variables_bf_resampling,
+#         )
+
+#         index_iter = updated_variables["iteration"]
+#         new_cov_array = update_array_at(
+#             index_iter, run_obj.cov_array, est_cov(**updated_variables)
+#         )
+#         new_estimates_array = update_array_at(
+#             index_iter, run_obj.estimates_array, est_mean(**updated_variables)
+#         )
+#         new_times_array = update_array_at(
+#             index_iter, run_obj.times_array, updated_variables["time"]
+#         )
+
+#         return Run(
+#             **{
+#                 **updated_variables,
+#                 **run_obj.return_immutable_attributes(),
+#                 **{
+#                     "cov_array": new_cov_array,
+#                     "estimates_array": new_estimates_array,
+#                     "times_array": new_times_array,
+#                 },
+#             }
+#         )
+
+# @jit
+# def smc_run(self, stop_checker_function, initial_run):
+#     step_fun = self.step
+#     return jax.lax.while_loop(stop_checker_function, step_fun, initial_run)
+
+
+# class SMCUpdaterConditionalMeasurementsInitialStates(eqx.Module):
+#     model: eqx.Module
+#     exp_design: eqx.Module
+#     resampler: eqx.Module
+#     initial_state: jax.Array
+#     true_pars: jax.Array
+#     number_exp_rep_matrix_shape: jax.Array
+
+#     def __init__(
+#         self,
+#         model,
+#         exp_design,
+#         resampler,
+#         initial_state,
+#         true_pars,
+#         number_exp_repetitions,
+#     ):
+#         self.model = model
+#         self.exp_design = exp_design
+#         self.resampler = resampler
+#         self.initial_state = initial_state
+#         self.true_pars = true_pars
+#         self.number_exp_rep_matrix_shape = jnp.identity(number_exp_repetitions)
+
+#     def likelihood_data(self, lkl_results, result):
+#         # result should be an array or list
+#         return lkl_results[*result]
+
+#     def update_weights(self, lkl, weights):
+#         new_weights = lkl * weights
+#         # actually we don't need to normalize all the time, as Alexandra told me
+#         # new_weights = new_weights / jnp.sum(new_weights)
+#         return new_weights
+
+#     # @jit
+#     def _iteration_smc_new_weights(
+#         self, key, iteration, particles_locations, weights, *args, **kwargs
+#     ):
+#         key, subkey = jax.random.split(key)
+
+#         t = self.exp_design.generate_time(
+#             key=subkey,
+#             particles_locations=particles_locations,
+#             weights=weights,
+#             model=self.model,
+#             initial_state=self.initial_state,
+#         )
+#         number_of_exp_re = self.number_exp_rep_matrix_shape.shape[0]
+#         keys = jax.random.split(key, number_of_exp_re + 1)
+
+#         key = keys[0]
+
+#         results = jax.vmap(self.model.generate_data, in_axes=(0, None, None, None))(
+#             keys[1:], self.true_pars, t, self.initial_state
+#         )
+
+#         all_lkls = jax.vmap(self.model.likelihood_particle, in_axes=(0, None, None))(
+#             particles_locations, t, self.initial_state
+#         )
+
+#         lkl_results_all_particles = vmap(self.likelihood_data, in_axes=(0, None))(
+#             all_lkls, results
+#         )
+
+#         lkl = jnp.prod(lkl_results_all_particles, axis=1)
+
+#         new_weights = self.update_weights(lkl, weights)
+#         # return key, iteration + 1, particles_locations, new_weights
+
+#         return {
+#             "iteration": iteration + 1,
+#             "key": key,
+#             "weights": new_weights,
+#             "particles_locations": particles_locations,
+#             "time": t,
+#             # self.cov_array,
+#         }
+
+#     # @jit
+#     def _step_force_resampling(self, run_obj):
+#         updated_variables_bf_resampling = self._iteration_smc_new_weights(
+#             **run_obj.return_mutable_attributes()
+#         )
+
+#         updated_variables = jax.lax.cond(
+#             False,
+#             lambda a: a,
+#             lambda a: {**a, **self.resampler.resample(**a)},
+#             updated_variables_bf_resampling,
+#         )
+
+#         index_iter = updated_variables["iteration"]
+#         new_cov_array = update_array_at(
+#             index_iter, run_obj.cov_array, est_cov(**updated_variables)
+#         )
+#         new_estimates_array = update_array_at(
+#             index_iter, run_obj.estimates_array, est_mean(**updated_variables)
+#         )
+#         new_times_array = update_array_at(
+#             index_iter, run_obj.times_array, updated_variables["time"]
+#         )
+
+#         return Run(
+#             **{
+#                 **updated_variables,
+#                 **run_obj.return_immutable_attributes(),
+#                 **{
+#                     "cov_array": new_cov_array,
+#                     "estimates_array": new_estimates_array,
+#                     "times_array": new_times_array,
+#                 },
+#             }
+#         )
+
+#     # @jit
+#     def step(self, run_obj):
+#         updated_variables_bf_resampling = self._iteration_smc_new_weights(
+#             **run_obj.return_mutable_attributes()
+#         )
+
+#         updated_variables = jax.lax.cond(
+#             ESS(updated_variables_bf_resampling["weights"])
+#             > updated_variables_bf_resampling["weights"].shape[0] / 2,
+#             lambda a: a,
+#             lambda a: {**a, **self.resampler.resample(**a)},
+#             updated_variables_bf_resampling,
+#         )
+
+#         index_iter = updated_variables["iteration"]
+#         new_cov_array = update_array_at(
+#             index_iter, run_obj.cov_array, est_cov(**updated_variables)
+#         )
+#         new_estimates_array = update_array_at(
+#             index_iter, run_obj.estimates_array, est_mean(**updated_variables)
+#         )
+#         new_times_array = update_array_at(
+#             index_iter, run_obj.times_array, updated_variables["time"]
+#         )
+
+#         return Run(
+#             **{
+#                 **updated_variables,
+#                 **run_obj.return_immutable_attributes(),
+#                 **{
+#                     "cov_array": new_cov_array,
+#                     "estimates_array": new_estimates_array,
+#                     "times_array": new_times_array,
+#                 },
+#             }
+#         )
+
+#     # @jit
+#     # def smc_run(self, stop_checker_function, initial_run):
+#     #     step_fun = self.step
+#     #     return jax.lax.while_loop(stop_checker_function, step_fun, initial_run)
+
+
+# @jax.jit
+# def SMC_run(
+#     initial_run,
+#     checker_obj,
+#     smc_obj,
+# ):
+#     return jax.lax.while_loop(checker_obj.check_stop, smc_obj.step, initial_run)
 
 
 class SMCUpdater(eqx.Module):
     model: eqx.Module
-    exp_design: eqx.Module
-    resampler: eqx.Module
-    initial_state: jax.Array
-    true_pars: jax.Array
-    number_exp_rep_matrix_shape: jax.Array
+    exp_design: ExperimentalDesign
+    resampler: Resampler
 
-    def __init__(
-        self,
-        model,
-        exp_design,
-        resampler,
-        initial_state,
-        true_pars,
-        number_exp_repetitions,
-    ):
+    def __init__(self, model, exp_design, resampler) -> None:
         self.model = model
         self.exp_design = exp_design
         self.resampler = resampler
-        self.initial_state = initial_state
-        self.true_pars = true_pars
-        self.number_exp_rep_matrix_shape = jnp.identity(number_exp_repetitions)
 
-    def likelihood_data(self, lkl_results, result):
-        return lkl_results[result]
+    def step(
+        self, key: Array, dist: Distribution, data: Data, *args, **kwargs
+    ) -> tuple[Array, Distribution]:
+        # generate experiment
+        # Measure experiment
+        # create datum
+        # append to data
+        # update distribution
+        # resample if necessary
 
-    def update_weights(self, lkl, weights):
-        new_weights = lkl * weights
-        new_weights = new_weights / jnp.sum(new_weights)
-        return new_weights
-
-    # @jit
-    def _iteration_smc_new_weights(
-        self, key, iteration, particles_locations, weights, *args, **kwargs
-    ):
+        key, subkey = jax.random.split(key=key)
+        experiment: Experiment = self.exp_design.generate_experiment(
+            model=self.model,
+            distribution=dist,
+            data=data,
+            subkey=subkey,
+            *args,
+            **kwargs,
+        )
         key, subkey = jax.random.split(key)
 
-        t = self.exp_design.generate_time(
-            key=subkey,
-            particles_locations=particles_locations,
-            weights=weights,
-            model=self.model,
-            initial_state=self.initial_state,
+        outcome = self.model.measure_one_experiment(
+            subkey=subkey, experiment=experiment
         )
-        number_of_exp_re = self.number_exp_rep_matrix_shape.shape[0]
-        keys = jax.random.split(key, number_of_exp_re + 1)
+        datum = Data(experiment=experiment, outcome=outcome)
 
-        key = keys[0]
+        new_data: Data = data.append(other=datum)
 
-        results = jax.vmap(self.model.generate_data, in_axes=(0, None, None, None))(
-            keys[1:], self.true_pars, t, self.initial_state
+        log_lkl: Array = self.model.log_lkl_datum_multiple_particles(
+            dist.particles_locations, datum
         )
 
-        all_lkls = jax.vmap(self.model.likelihood_particle, in_axes=(0, None, None))(
-            particles_locations, t, self.initial_state
+        new_dist: Distribution = update_log_weights(dist=dist, new_log_lkl=log_lkl)
+
+        key, new_dist = jax.lax.cond(
+            new_dist.check_resampling(),
+            self.aux_fun_resample,
+            do_not_resample,
+            *(
+                key,
+                new_dist,
+                new_data,
+            ),
         )
+        return key, new_dist, new_data
 
-        lkl_results_all_particles = vmap(self.likelihood_data, in_axes=(0, None))(
-            all_lkls, results
-        )
-
-        lkl = jnp.prod(lkl_results_all_particles, axis=1)
-
-        new_weights = self.update_weights(lkl, weights)
-        # return key, iteration + 1, particles_locations, new_weights
-
-        return {
-            "iteration": iteration + 1,
-            "key": key,
-            "weights": new_weights,
-            "particles_locations": particles_locations,
-            "time": t,
-            # self.cov_array,
-        }
-
-    # @jit
-    def _step_force_resampling(self, run_obj):
-
-        updated_variables_bf_resampling = self._iteration_smc_new_weights(
-            **run_obj.return_mutable_attributes()
-        )
-
-        updated_variables = jax.lax.cond(
-            False,
-            lambda a: a,
-            lambda a: {**a, **self.resampler.resample(**a)},
-            updated_variables_bf_resampling,
-        )
-
-        index_iter = updated_variables["iteration"]
-        new_cov_array = update_array_at(
-            index_iter, run_obj.cov_array, est_cov(**updated_variables)
-        )
-        new_estimates_array = update_array_at(
-            index_iter, run_obj.estimates_array, est_mean(**updated_variables)
-        )
-        new_times_array = update_array_at(
-            index_iter, run_obj.times_array, updated_variables["time"]
-        )
-
-        return Run(
-            **{
-                **updated_variables,
-                **run_obj.return_immutable_attributes(),
-                **{
-                    "cov_array": new_cov_array,
-                    "estimates_array": new_estimates_array,
-                    "times_array": new_times_array,
-                },
-            }
-        )
-
-    # @jit
-    def step(self, run_obj):
-
-        updated_variables_bf_resampling = self._iteration_smc_new_weights(
-            **run_obj.return_mutable_attributes()
-        )
-
-        updated_variables = jax.lax.cond(
-            ESS(updated_variables_bf_resampling["weights"])
-            > updated_variables_bf_resampling["weights"].shape[0] / 2,
-            lambda a: a,
-            lambda a: {**a, **self.resampler.resample(**a)},
-            updated_variables_bf_resampling,
-        )
-
-        index_iter = updated_variables["iteration"]
-        new_cov_array = update_array_at(
-            index_iter, run_obj.cov_array, est_cov(**updated_variables)
-        )
-        new_estimates_array = update_array_at(
-            index_iter, run_obj.estimates_array, est_mean(**updated_variables)
-        )
-        new_times_array = update_array_at(
-            index_iter, run_obj.times_array, updated_variables["time"]
-        )
-
-        return Run(
-            **{
-                **updated_variables,
-                **run_obj.return_immutable_attributes(),
-                **{
-                    "cov_array": new_cov_array,
-                    "estimates_array": new_estimates_array,
-                    "times_array": new_times_array,
-                },
-            }
-        )
-
-    # @jit
-    # def smc_run(self, stop_checker_function, initial_run):
-    #     step_fun = self.step
-    #     return jax.lax.while_loop(stop_checker_function, step_fun, initial_run)
-
-
-class SMCUpdaterConditionalMeasurementsInitialStates(eqx.Module):
-    model: eqx.Module
-    exp_design: eqx.Module
-    resampler: eqx.Module
-    initial_state: jax.Array
-    true_pars: jax.Array
-    number_exp_rep_matrix_shape: jax.Array
-
-    def __init__(
-        self,
-        model,
-        exp_design,
-        resampler,
-        initial_state,
-        true_pars,
-        number_exp_repetitions,
-    ):
-        self.model = model
-        self.exp_design = exp_design
-        self.resampler = resampler
-        self.initial_state = initial_state
-        self.true_pars = true_pars
-        self.number_exp_rep_matrix_shape = jnp.identity(number_exp_repetitions)
-
-    def likelihood_data(self, lkl_results, result):
-        # result should be an array or list
-        return lkl_results[*result]
-
-    def update_weights(self, lkl, weights):
-        new_weights = lkl * weights
-        # actually we don't need to normalize all the time, as Alexandra told me
-        # new_weights = new_weights / jnp.sum(new_weights)
-        return new_weights
-
-    # @jit
-    def _iteration_smc_new_weights(
-        self, key, iteration, particles_locations, weights, *args, **kwargs
-    ):
+    def aux_fun_resample(
+        self, key, dist: Distribution, data: Data, *args, **kwargs
+    ) -> tuple[Array, Distribution]:
         key, subkey = jax.random.split(key)
-
-        t = self.exp_design.generate_time(
-            key=subkey,
-            particles_locations=particles_locations,
-            weights=weights,
-            model=self.model,
-            initial_state=self.initial_state,
+        new_dist: Distribution = self.resampler.resample(
+            subkey=subkey, distribution=dist, data=data
         )
-        number_of_exp_re = self.number_exp_rep_matrix_shape.shape[0]
-        keys = jax.random.split(key, number_of_exp_re + 1)
-
-        key = keys[0]
-
-        results = jax.vmap(self.model.generate_data, in_axes=(0, None, None, None))(
-            keys[1:], self.true_pars, t, self.initial_state
-        )
-
-        all_lkls = jax.vmap(self.model.likelihood_particle, in_axes=(0, None, None))(
-            particles_locations, t, self.initial_state
-        )
-
-        lkl_results_all_particles = vmap(self.likelihood_data, in_axes=(0, None))(
-            all_lkls, results
-        )
-
-        lkl = jnp.prod(lkl_results_all_particles, axis=1)
-
-        new_weights = self.update_weights(lkl, weights)
-        # return key, iteration + 1, particles_locations, new_weights
-
-        return {
-            "iteration": iteration + 1,
-            "key": key,
-            "weights": new_weights,
-            "particles_locations": particles_locations,
-            "time": t,
-            # self.cov_array,
-        }
-
-    # @jit
-    def _step_force_resampling(self, run_obj):
-
-        updated_variables_bf_resampling = self._iteration_smc_new_weights(
-            **run_obj.return_mutable_attributes()
-        )
-
-        updated_variables = jax.lax.cond(
-            False,
-            lambda a: a,
-            lambda a: {**a, **self.resampler.resample(**a)},
-            updated_variables_bf_resampling,
-        )
-
-        index_iter = updated_variables["iteration"]
-        new_cov_array = update_array_at(
-            index_iter, run_obj.cov_array, est_cov(**updated_variables)
-        )
-        new_estimates_array = update_array_at(
-            index_iter, run_obj.estimates_array, est_mean(**updated_variables)
-        )
-        new_times_array = update_array_at(
-            index_iter, run_obj.times_array, updated_variables["time"]
-        )
-
-        return Run(
-            **{
-                **updated_variables,
-                **run_obj.return_immutable_attributes(),
-                **{
-                    "cov_array": new_cov_array,
-                    "estimates_array": new_estimates_array,
-                    "times_array": new_times_array,
-                },
-            }
-        )
-
-    # @jit
-    def step(self, run_obj):
-
-        updated_variables_bf_resampling = self._iteration_smc_new_weights(
-            **run_obj.return_mutable_attributes()
-        )
-
-        updated_variables = jax.lax.cond(
-            ESS(updated_variables_bf_resampling["weights"])
-            > updated_variables_bf_resampling["weights"].shape[0] / 2,
-            lambda a: a,
-            lambda a: {**a, **self.resampler.resample(**a)},
-            updated_variables_bf_resampling,
-        )
-
-        index_iter = updated_variables["iteration"]
-        new_cov_array = update_array_at(
-            index_iter, run_obj.cov_array, est_cov(**updated_variables)
-        )
-        new_estimates_array = update_array_at(
-            index_iter, run_obj.estimates_array, est_mean(**updated_variables)
-        )
-        new_times_array = update_array_at(
-            index_iter, run_obj.times_array, updated_variables["time"]
-        )
-
-        return Run(
-            **{
-                **updated_variables,
-                **run_obj.return_immutable_attributes(),
-                **{
-                    "cov_array": new_cov_array,
-                    "estimates_array": new_estimates_array,
-                    "times_array": new_times_array,
-                },
-            }
-        )
-
-    # @jit
-    # def smc_run(self, stop_checker_function, initial_run):
-    #     step_fun = self.step
-    #     return jax.lax.while_loop(stop_checker_function, step_fun, initial_run)
+        return key, new_dist
 
 
-@jax.jit
-def SMC_run(
-    initial_run,
-    checker_obj,
-    smc_obj,
-):
-    return jax.lax.while_loop(checker_obj.check_stop, smc_obj.step, initial_run)
+def do_not_resample(
+    key, dist: Distribution, *args, **kwargs
+) -> tuple[Array, Distribution]:
+    return key, dist

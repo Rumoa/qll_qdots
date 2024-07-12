@@ -100,7 +100,7 @@ def normalize_log_weights(logweights: Array) -> Array:
     return new_logweights
 
 
-def update_log_weights(dist: Distribution, new_log_lkl: Array):
+def update_log_weights(dist: Distribution, new_log_lkl: Array) -> Distribution:
     get_log_weights = lambda logdist: logdist.log_weights
     new_log_weights = dist.log_weights + new_log_lkl
     new_log_weights = normalize_log_weights(new_log_weights)

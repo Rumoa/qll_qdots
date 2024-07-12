@@ -7,6 +7,7 @@ import jax
 import jax.numpy as jnp
 from jax.experimental import host_callback
 from jaxtyping import Array, Complex, Float, Int, Real
+from tensorflow_probability.substrates import jax as tfp
 
 from qdots_qll.distributions import Distribution, _est_cov, _est_mean
 from qdots_qll.models.single_dot_weak_coupling_GAME import Data
@@ -195,3 +196,145 @@ class Resampler(eqx.Module):
         self, subkey: Array, distribution: Distribution, data: Data, *args, **kwargs
     ) -> Distribution:
         pass
+
+
+class MetropolisSampler(Resampler):
+    factor: float
+    boundaries: Array
+    model: eqx.Module
+
+    def __init__(self, boundaries: Array, model: eqx.Module, factor=1):
+        self.factor = factor
+        self.boundaries = boundaries
+        self.model = model
+
+    # @jax.jit
+    def resample(
+        self, subkey, distribution: Distribution, data, *args, **kwargs
+    ) -> Distribution:
+        key, subkey = jax.random.split(subkey)
+        # multinomial sampling to introduce variability
+        old_locations = self.multinomial_importance_sampling(subkey, distribution)
+
+        key, subkey = jax.random.split(subkey)
+
+        proposals = self.generate_proposals(
+            subkey, distribution, locs_after_importance_sampling=old_locations
+        )
+
+        log_uniform = jnp.log(jax.random.uniform(subkey))
+
+        old_log_lkl = self.model.batch_total_log_lkl(old_locations, data)
+        new_log_lkl = self.model.batch_total_log_lkl(proposals, data)
+        do_accept = log_uniform < new_log_lkl - old_log_lkl
+        new_locations = jnp.where(do_accept[:, None], proposals, old_locations)
+
+        no_particles = proposals.shape[0]
+        dist_new_locs = Distribution(
+            particles_locations=new_locations,
+            weights=jnp.ones(no_particles) / no_particles,
+        )
+        return dist_new_locs
+
+    def multinomial_importance_sampling(self, subkey, dist: Distribution):
+        no_particles = dist.particles_locations.shape[0]
+
+        new_locs = jax.random.choice(
+            subkey,
+            dist.particles_locations,
+            shape=(no_particles,),
+            p=dist.weights / dist.weights.sum(),
+        )
+        new_locs
+        return new_locs
+
+    def generate_proposals(
+        self, subkey, original_dist: Distribution, locs_after_importance_sampling
+    ) -> Array:
+        cov = jnp.diag(original_dist.cov())
+        return tfp.distributions.TruncatedNormal(
+            loc=locs_after_importance_sampling,
+            scale=jnp.sqrt(cov) * self.factor,
+            low=self.boundaries[:, 0],
+            high=self.boundaries[:, 1],
+        ).sample(seed=subkey, sample_shape=1)[0, :, :]
+
+    def acceptance_rates(self, proposals, old_locations, data):
+        old_log_lkl = self.model.batch_total_log_lkl(old_locations, data)
+        new_log_lkl = self.model.batch_total_log_lkl(proposals, data)
+
+        acc_rates: Array = jnp.where(
+            jnp.exp(old_log_lkl) > 0.0, jnp.exp(new_log_lkl - old_log_lkl), 1
+        )
+        acc_rates = self.filter_acc_rates(
+            acc_rates, jnp.exp(new_log_lkl), jnp.exp(old_log_lkl)
+        )
+        return acc_rates
+
+    def filter_acc_rates(self, acc_rates, new_likelihoods, old_likelihoods):
+        acc_rates = jnp.where(
+            jnp.logical_or(old_likelihoods == 0, acc_rates > 1),
+            jnp.ceil(new_likelihoods),
+            acc_rates,
+        )
+        return acc_rates
+
+    def rejection_step(self, subkey, proposals, acc_rates, old_locs):
+        """
+        Probabilistically accept or reject the new samples.
+        """
+        accept: Array = jax.random.binomial(subkey, 1, acc_rates)
+        new_locs = jnp.where(accept[:, None], proposals, old_locs)
+        return new_locs
+
+
+class LiuWestResampler(Resampler):
+    boundaries: Array
+    a: float
+    # model: eqx.Module
+
+    def __init__(self, boundaries: Array, a=0.98) -> None:
+        self.a = a
+        self.boundaries = boundaries
+        # self.model = model
+
+    def multinomial_importance_sampling(self, subkey, dist: Distribution) -> Array:
+        no_particles = dist.particles_locations.shape[0]
+
+        new_locs = jax.random.choice(
+            subkey,
+            dist.particles_locations,
+            shape=(no_particles,),
+            p=dist.weights / dist.weights.sum(),
+        )
+
+        return new_locs
+
+    def resample(
+        self, subkey, distribution: Distribution, *args, **kwargs
+    ) -> Distribution:
+        mu = distribution.ev()
+        std_diag = jnp.sqrt(jnp.diag(distribution.cov()))
+        a = self.a
+
+        key, subkey = jax.random.split(subkey)
+        locs_after_is = self.multinomial_importance_sampling(subkey, distribution)
+
+        means = a * locs_after_is + (1 - a) * mu
+        h = (1 - a**2) ** 0.5
+        std_with_h = std_diag * h
+
+        key, subkey = jax.random.split(key)
+        new_locs = tfp.distributions.TruncatedNormal(
+            loc=means,
+            scale=std_with_h,
+            low=self.boundaries[:, 0],
+            high=self.boundaries[:, 1],
+        ).sample(seed=subkey, sample_shape=1)[0, :, :]
+
+        no_particles = distribution.particles_locations.shape[0]
+        dist_new_locs = Distribution(
+            particles_locations=new_locs,
+            weights=jnp.ones(no_particles) / no_particles,
+        )
+        return dist_new_locs
