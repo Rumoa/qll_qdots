@@ -682,7 +682,13 @@ class SMCUpdater(eqx.Module):
         self.resampler = resampler
 
     def step(
-        self, key: Array, dist: Distribution, data: Data, *args, **kwargs
+        self,
+        iteration: int,
+        key: Array,
+        dist: Distribution,
+        data: Data,
+        *args,
+        **kwargs,
     ) -> tuple[Array, Distribution]:
         # generate experiment
         # Measure experiment
@@ -708,6 +714,13 @@ class SMCUpdater(eqx.Module):
         datum = Data(experiment=experiment, outcome=outcome)
 
         new_data: Data = data.append(other=datum)
+
+        new_data = jax.lax.cond(
+            iteration == 0,
+            lambda data, datum: datum,
+            lambda data, datum: data,
+            *(new_data, datum),
+        )
 
         log_lkl: Array = self.model.log_lkl_datum_multiple_particles(
             dist.particles_locations, datum

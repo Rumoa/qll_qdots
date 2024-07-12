@@ -5,9 +5,15 @@ import jax
 import jax.numpy as jnp
 import optax
 from jax import jit
+from jaxtyping import Array
 
-from qdots_qll.distributions import _est_mean
-from qdots_qll.models.single_dot_weak_coupling_GAME import Experiment
+from qdots_qll.distributions import Distribution, _est_mean
+from qdots_qll.models.base_model import Model
+from qdots_qll.models.single_dot_weak_coupling_GAME import (
+    Data,
+    Experiment,
+    ExperimentSingleDotWeakCouplingGAME,
+)
 
 
 class ExperimentalDesign(eqx.Module):
@@ -304,3 +310,73 @@ class OptimizeInitialStateMeasurementsTrace(eqx.Module):
 
         re, _ = jax.lax.scan(f_for_scan, [params, opt_state], None, length=self.iter)
         return re[0]["state"], re[0]["measurement"]
+
+
+class RandExpDesignGAME(ExperimentalDesign):
+    def __init__(
+        self,
+    ):
+        pass
+
+    # def generate_experiment(
+    #     self,
+    #     subkey: Array,
+    #     model: Model,
+    #     dist: Distribution,
+    #     data: Data,
+    #     *args,
+    #     **kwargs,
+    # ) -> Experiment:
+    #     key, subkey = jax.random.split(subkey)
+    #     # I am gonna generate a random time
+
+    #     time = jax.random.uniform(subkey, minval=0.1, maxval=40.0)
+
+    #     key, subkey = jax.random.split(key)
+
+    #     chosen_initial_state = jax.random.choice(
+    #         key,
+    #         a=jnp.array([0, 1, 2, 3]),
+    #     )
+
+    #     chosen_measurement_basis = jax.random.choice(
+    #         subkey,
+    #         a=jnp.array([0, 1, 2]),
+    #     )
+
+    #     experiment = ExperimentSingleDotWeakCouplingGAME(
+    #         t=time,
+    #         initial_state=chosen_initial_state,
+    #         measurement_basis=chosen_measurement_basis,
+    #     )
+    #     return experiment
+
+    def generate_experiment(
+        self,
+        subkey: Array,
+        *args,
+        **kwargs,
+    ) -> Experiment:
+        key, subkey = jax.random.split(subkey)
+        # I am gonna generate a random time
+
+        time = jax.random.uniform(subkey, minval=0.1, maxval=40.0)
+
+        key, subkey = jax.random.split(key)
+
+        chosen_initial_state = jax.random.choice(
+            key,
+            a=jnp.array([0, 1, 2, 3]),
+        )
+
+        chosen_measurement_basis = jax.random.choice(
+            subkey,
+            a=jnp.array([0, 1, 2]),
+        )
+
+        experiment = ExperimentSingleDotWeakCouplingGAME(
+            t=time,
+            initial_state=chosen_initial_state,
+            measurement_basis=chosen_measurement_basis,
+        )
+        return experiment
