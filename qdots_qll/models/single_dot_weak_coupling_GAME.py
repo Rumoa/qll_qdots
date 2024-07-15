@@ -6,6 +6,7 @@ import qutip as qt
 from jax import jit
 from jax.scipy.linalg import expm
 from jaxtyping import Array, Complex, Float, Int, Real
+from sympy import true
 
 import qdots_qll.models.quantum_utils
 from qdots_qll.models.models_scratch_for_drafting import BaseClassDimension
@@ -126,9 +127,9 @@ class ExperimentSingleDotWeakCouplingGAME(Experiment):
     measurement_basis: int
 
     def __init__(self, t: float, initial_state: int, measurement_basis: int) -> None:
-        self.time = ensure_array(t)
-        self.initial_state = ensure_array(initial_state)
-        self.measurement_basis = ensure_array(measurement_basis)
+        self.time = jnp.float32(ensure_array(t))
+        self.initial_state = jnp.int32(ensure_array(initial_state))
+        self.measurement_basis = jnp.int32(ensure_array(measurement_basis))
 
     def __len__(self):
         return len(self.time)
@@ -168,6 +169,7 @@ class SingleDotWeakCouplingGAME(BaseClassDimension):
     number_of_parameters: int
     delta: float
     Omega: float
+    true_parameters: Array
     T: float
     POVM_arr: Complex[Array, "no_basis no_outcomes d d"]
     initial_states_bloch: Float[Array, "no_initial_states d"]
@@ -179,12 +181,15 @@ class SingleDotWeakCouplingGAME(BaseClassDimension):
     matrix_change_basis_bloch: Complex[Array, "2 2"]
     vec_G: Complex[Array, "d d d"]
 
-    def __init__(self):
-        super().__init__(dimension=2)
+    def __init__(self, true_parameters=true_parameters):
+        super().__init__(
+            dimension=2,
+        )
         self.number_of_parameters = 4
         self.delta = 0.12739334807998307
         self.Omega = 0.5
         self.T = 30
+        self.true_parameters = true_parameters
         self.POVM_arr = canonical_povm
         self.basis_elements = jnp.identity(4)
         self.initial_states_bloch = initial_states_bloch
@@ -365,9 +370,9 @@ class SingleDotWeakCouplingGAME(BaseClassDimension):
         ]
 
     def measure_one_experiment(
-        self, subkey, particle, experiment: ExperimentSingleDotWeakCouplingGAME
+        self, subkey, experiment: ExperimentSingleDotWeakCouplingGAME
     ):
-        lkl = self.lkl_outcome_one_experiment(particle, experiment)
+        lkl = self.lkl_outcome_one_experiment(self.true_parameters, experiment)
         return jax.random.choice(subkey, jnp.array([0, 1]), p=lkl)
 
     # def measure_experiment(self, subkey, experiment: ExperimentSingleDotWeakCouplingGAME):
@@ -399,4 +404,4 @@ class SingleDotWeakCouplingGAME(BaseClassDimension):
         loglkl_arr = jax.vmap(self.log_lkl_single_datum, in_axes=(0, None))(
             particles, datum
         )
-        return loglkl_arr
+        return jnp.squeeze(loglkl_arr)

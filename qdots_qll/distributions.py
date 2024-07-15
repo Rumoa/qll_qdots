@@ -30,8 +30,8 @@ class Distribution(eqx.Module):
         log_weights: Array = None,
     ) -> None:
         self.particles_locations = ensure_particles_shape(particles_locations)
-        self.no_particles = self.particles_locations.shape[0]
-        self.no_rv = self.particles_locations.shape[1]
+        # self.no_particles = self.particles_locations.shape[0]
+        # self.no_rv = self.particles_locations.shape[1]
 
         if weights is not None and log_weights is None:
             self.log_weights = normalize_log_weights(jnp.log(weights))
@@ -41,6 +41,14 @@ class Distribution(eqx.Module):
     @property
     def weights(self):
         return jnp.exp(self.log_weights)
+
+    @property
+    def no_rv(self):
+        return self.particles_locations.shape[1]
+
+    @property
+    def no_particles(self):
+        return self.particles_locations.shape[0]
 
     def ev(
         self,
@@ -101,6 +109,7 @@ def normalize_log_weights(logweights: Array) -> Array:
 
 
 def update_log_weights(dist: Distribution, new_log_lkl: Array) -> Distribution:
+    new_log_lkl = jnp.squeeze(new_log_lkl)
     get_log_weights = lambda logdist: logdist.log_weights
     new_log_weights = dist.log_weights + new_log_lkl
     new_log_weights = normalize_log_weights(new_log_weights)

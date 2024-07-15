@@ -671,6 +671,7 @@ from qdots_qll.resamplers import Resampler
 #     return jax.lax.while_loop(checker_obj.check_stop, smc_obj.step, initial_run)
 
 
+@jit
 class SMCUpdater(eqx.Module):
     model: eqx.Module
     exp_design: ExperimentalDesign
@@ -715,12 +716,12 @@ class SMCUpdater(eqx.Module):
 
         new_data: Data = data.append(other=datum)
 
-        new_data = jax.lax.cond(
-            iteration == 0,
-            lambda data, datum: datum,
-            lambda data, datum: data,
-            *(new_data, datum),
-        )
+        # new_data = jax.lax.cond(
+        #     iteration == 0,
+        #     lambda data, datum: datum,
+        #     lambda data, datum: data,
+        #     *(new_data, datum),
+        # )
 
         log_lkl: Array = self.model.log_lkl_datum_multiple_particles(
             dist.particles_locations, datum
@@ -728,29 +729,26 @@ class SMCUpdater(eqx.Module):
 
         new_dist: Distribution = update_log_weights(dist=dist, new_log_lkl=log_lkl)
 
-        key, new_dist = jax.lax.cond(
-            new_dist.check_resampling(),
-            self.aux_fun_resample,
-            do_not_resample,
-            *(
-                key,
-                new_dist,
-                new_data,
-            ),
-        )
+        # key, new_dist = jax.lax.cond(
+        #     new_dist.check_resampling(),
+        #     _aux_fun_resample,
+        #     _aux_fun_do_not_resample,
+        #     *(key, new_dist, new_data, self.resampler),
+        # )
         return key, new_dist, new_data
 
-    def aux_fun_resample(
-        self, key, dist: Distribution, data: Data, *args, **kwargs
-    ) -> tuple[Array, Distribution]:
-        key, subkey = jax.random.split(key)
-        new_dist: Distribution = self.resampler.resample(
-            subkey=subkey, distribution=dist, data=data
-        )
-        return key, new_dist
 
-
-def do_not_resample(
+def _aux_fun_do_not_resample(
     key, dist: Distribution, *args, **kwargs
 ) -> tuple[Array, Distribution]:
     return key, dist
+
+
+def _aux_fun_resample(
+    key, dist: Distribution, data: Data, resampler: Resampler, *args, **kwargs
+) -> tuple[Array, Distribution]:
+    key, subkey = jax.random.split(key)
+    new_dist: Distribution = resampler.resample(
+        subkey=subkey, distribution=dist, data=data
+    )
+    return key, new_dist
