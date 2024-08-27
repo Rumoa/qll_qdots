@@ -3,6 +3,7 @@ __pycache__/
 *.py[cod]
 *$py.class
 
+profiling/jax_cache
 qdots_qll/__pycache__/
 qdots_qll.egg-info
 tests/__pycache__/
