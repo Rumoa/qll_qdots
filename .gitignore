@@ -3,7 +3,9 @@ __pycache__/
 *.py[cod]
 *$py.class
 
-profiling/tmp/
+profiling/tmp/jax_cache/*
+profiling/tmp/tensorboard
+
 qdots_qll/__pycache__/
 qdots_qll.egg-info
 tests/__pycache__/
