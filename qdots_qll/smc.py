@@ -681,7 +681,7 @@ class SMCUpdater(eqx.Module):
         self.exp_design = exp_design
         self.resampler = resampler
 
-    @eqx.filter_jit
+    @jit
     def step(
         self,
         iteration: int,

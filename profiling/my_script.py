@@ -7,14 +7,14 @@ model = SingleDotWeakCouplingGAME()
 
 times = jnp.linspace(0, 40.0, 1000)
 
-# jax.profiler.start_trace("tmp/tensorboard")
+jax.profiler.start_trace("tmp/tensorboard")
 probs = jax.vmap(lambda t: model.likelihood_particle(model.true_parameters, t))(times)
 
 probs.block_until_ready()
 # jax.profiler.stop_trace()
 
 
-jax.profiler.start_trace("tmp/tensorboard")
+# jax.profiler.start_trace("tmp/tensorboard")
 probs = jax.vmap(
     lambda t: model.likelihood_particle(model.true_parameters * 1.00001, t)
 )(times)

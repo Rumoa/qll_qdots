@@ -1,0 +1,535 @@
+DEBUG:matplotlib:matplotlib data path: /home/antonio/miniconda3/envs/jax_qdots/lib/python3.12/site-packages/matplotlib/mpl-data
+DEBUG:matplotlib:CONFIGDIR=/home/antonio/.config/matplotlib
+DEBUG:matplotlib:interactive is False
+DEBUG:matplotlib:platform is linux
+DEBUG:matplotlib:CACHEDIR=/home/antonio/.cache/matplotlib
+DEBUG:matplotlib.font_manager:Using fontManager instance from /home/antonio/.cache/matplotlib/fontlist-v330.json
+WARNING:jax._src.pjit:TRACING CACHE MISS at /home/antonio/dev/qdots_efficient/qdots_qll/models/single_dot_weak_coupling_GAME.py:22:8 (<module>) because:
+  never seen function:
+    convert_element_type id=133165965189312 defined at /home/antonio/miniconda3/envs/jax_qdots/lib/python3.12/site-packages/jax/_src/dispatch.py:93
+INFO:jax._src.xla_bridge:Unable to initialize backend 'rocm': module 'jaxlib.xla_extension' has no attribute 'GpuAllocatorConfig'
+INFO:jax._src.xla_bridge:Unable to initialize backend 'tpu': INTERNAL: Failed to open libtpu.so: libtpu.so: cannot open shared object file: No such file or directory
+DEBUG:jax._src.compiler:get_compile_options: num_replicas=1 num_partitions=1 device_assignment=[[cuda(id=0)]]
+DEBUG:jax._src.compiler:get_compile_options XLA-AutoFDO profile: using XLA-AutoFDO profile version -1
+DEBUG:jax._src.compiler:Persistent compilation cache hit for 'jit_convert_element_type'
+WARNING:jax._src.pjit:TRACING CACHE MISS at /home/antonio/dev/qdots_efficient/qdots_qll/models/single_dot_weak_coupling_GAME.py:28:8 (<module>) because:
+  never seen function:
+    convert_element_type id=133165970019072 defined at /home/antonio/miniconda3/envs/jax_qdots/lib/python3.12/site-packages/jax/_src/dispatch.py:93
+DEBUG:jax._src.compiler:get_compile_options: num_replicas=1 num_partitions=1 device_assignment=[[cuda(id=0)]]
+DEBUG:jax._src.compiler:get_compile_options XLA-AutoFDO profile: using XLA-AutoFDO profile version -1
+DEBUG:jax._src.compiler:Persistent compilation cache hit for 'jit_convert_element_type'
+WARNING:jax._src.pjit:TRACING CACHE MISS at /home/antonio/dev/qdots_efficient/qdots_qll/models/single_dot_weak_coupling_GAME.py:20:5 (<module>) because:
+  for convert_element_type defined at /home/antonio/miniconda3/envs/jax_qdots/lib/python3.12/site-packages/jax/_src/dispatch.py:93
+  never seen input type signature:
+    args[0]: i32[2,2]
+  closest seen input type signature has 1 mismatches, including:
+    * at args[0], seen c64[2,2], but now given i32[2,2]
+DEBUG:jax._src.compiler:get_compile_options: num_replicas=1 num_partitions=1 device_assignment=[[cuda(id=0)]]
+DEBUG:jax._src.compiler:get_compile_options XLA-AutoFDO profile: using XLA-AutoFDO profile version -1
+DEBUG:jax._src.compiler:Persistent compilation cache hit for 'jit_convert_element_type'
+WARNING:jax._src.pjit:TRACING CACHE MISS at /home/antonio/dev/qdots_efficient/qdots_qll/models/single_dot_weak_coupling_GAME.py:20:5 (<module>) because:
+  never seen function:
+    broadcast_in_dim id=133165965860416 defined at /home/antonio/miniconda3/envs/jax_qdots/lib/python3.12/site-packages/jax/_src/dispatch.py:93
+DEBUG:jax._src.compiler:get_compile_options: num_replicas=1 num_partitions=1 device_assignment=[[cuda(id=0)]]
+DEBUG:jax._src.compiler:get_compile_options XLA-AutoFDO profile: using XLA-AutoFDO profile version -1
+DEBUG:jax._src.compiler:Persistent compilation cache hit for 'jit_broadcast_in_dim'
+WARNING:jax._src.pjit:TRACING CACHE MISS at /home/antonio/dev/qdots_efficient/qdots_qll/models/single_dot_weak_coupling_GAME.py:20:5 (<module>) because:
+  never seen function:
+    concatenate id=133165965863776 defined at /home/antonio/miniconda3/envs/jax_qdots/lib/python3.12/site-packages/jax/_src/dispatch.py:93
+  but seen another function defined on the same line; maybe the function is
+  being re-defined repeatedly, preventing caching?
+DEBUG:jax._src.compiler:get_compile_options: num_replicas=1 num_partitions=1 device_assignment=[[cuda(id=0)]]
+DEBUG:jax._src.compiler:get_compile_options XLA-AutoFDO profile: using XLA-AutoFDO profile version -1
+DEBUG:jax._src.compiler:Persistent compilation cache hit for 'jit_concatenate'
+DEBUG:jax._src.compiler:get_compile_options: num_replicas=1 num_partitions=1 device_assignment=[[cuda(id=0)]]
+DEBUG:jax._src.compiler:get_compile_options XLA-AutoFDO profile: using XLA-AutoFDO profile version -1
+DEBUG:jax._src.compiler:Persistent compilation cache hit for 'jit_sqrt'
+DEBUG:jax._src.compiler:get_compile_options: num_replicas=1 num_partitions=1 device_assignment=[[cuda(id=0)]]
+DEBUG:jax._src.compiler:get_compile_options XLA-AutoFDO profile: using XLA-AutoFDO profile version -1
+DEBUG:jax._src.compiler:Persistent compilation cache hit for 'jit_true_divide'
+WARNING:jax._src.pjit:TRACING CACHE MISS at /home/antonio/dev/qdots_efficient/qdots_qll/models/single_dot_weak_coupling_GAME.py:64:18 (<module>) because:
+  never seen function:
+    convert_element_type id=133165966034400 defined at /home/antonio/miniconda3/envs/jax_qdots/lib/python3.12/site-packages/jax/_src/dispatch.py:93
+DEBUG:jax._src.compiler:get_compile_options: num_replicas=1 num_partitions=1 device_assignment=[[cuda(id=0)]]
+DEBUG:jax._src.compiler:get_compile_options XLA-AutoFDO profile: using XLA-AutoFDO profile version -1
+DEBUG:jax._src.compiler:Persistent compilation cache hit for 'jit_convert_element_type'
+WARNING:jax._src.pjit:TRACING CACHE MISS at /home/antonio/dev/qdots_efficient/qdots_qll/models/single_dot_weak_coupling_GAME.py:67:4 (<module>) because:
+  for convert_element_type defined at /home/antonio/miniconda3/envs/jax_qdots/lib/python3.12/site-packages/jax/_src/dispatch.py:93
+  never seen input type signature:
+    args[0]: c64[6,2,2]
+  closest seen input type signature has 1 mismatches, including:
+    * at args[0], seen c64[2,2], but now given c64[6,2,2]
+DEBUG:jax._src.compiler:get_compile_options: num_replicas=1 num_partitions=1 device_assignment=[[cuda(id=0)]]
+DEBUG:jax._src.compiler:get_compile_options XLA-AutoFDO profile: using XLA-AutoFDO profile version -1
+DEBUG:jax._src.compiler:Persistent compilation cache hit for 'jit_convert_element_type'
+DEBUG:jax._src.compiler:get_compile_options: num_replicas=1 num_partitions=1 device_assignment=[[cuda(id=0)]]
+DEBUG:jax._src.compiler:get_compile_options XLA-AutoFDO profile: using XLA-AutoFDO profile version -1
+DEBUG:jax._src.compiler:Persistent compilation cache hit for 'jit_true_divide'
+WARNING:jax._src.pjit:TRACING CACHE MISS at /home/antonio/dev/qdots_efficient/qdots_qll/models/single_dot_weak_coupling_GAME.py:78:2 (<module>) because:
+  never seen function:
+    reshape id=133166590081792 defined at /home/antonio/miniconda3/envs/jax_qdots/lib/python3.12/site-packages/jax/_src/dispatch.py:93
+DEBUG:jax._src.compiler:get_compile_options: num_replicas=1 num_partitions=1 device_assignment=[[cuda(id=0)]]
+DEBUG:jax._src.compiler:get_compile_options XLA-AutoFDO profile: using XLA-AutoFDO profile version -1
+DEBUG:jax._src.compiler:Persistent compilation cache hit for 'jit_reshape'
+WARNING:jax._src.pjit:TRACING CACHE MISS at /home/antonio/dev/qdots_efficient/qdots_qll/models/single_dot_weak_coupling_GAME.py:87:20 (<module>) because:
+  for convert_element_type defined at /home/antonio/miniconda3/envs/jax_qdots/lib/python3.12/site-packages/jax/_src/dispatch.py:93
+  never seen input type signature:
+    args[0]: c64[4,2,2]
+  closest seen input type signature has 1 mismatches, including:
+    * at args[0], seen c64[2,2], but now given c64[4,2,2]
+DEBUG:jax._src.compiler:get_compile_options: num_replicas=1 num_partitions=1 device_assignment=[[cuda(id=0)]]
+DEBUG:jax._src.compiler:get_compile_options XLA-AutoFDO profile: using XLA-AutoFDO profile version -1
+DEBUG:jax._src.compiler:Persistent compilation cache hit for 'jit_convert_element_type'
+DEBUG:jax._src.compiler:get_compile_options: num_replicas=1 num_partitions=1 device_assignment=[[cuda(id=0)]]
+DEBUG:jax._src.compiler:get_compile_options XLA-AutoFDO profile: using XLA-AutoFDO profile version -1
+DEBUG:jax._src.compiler:Persistent compilation cache hit for 'jit__einsum'
+DEBUG:jax._src.compiler:get_compile_options: num_replicas=1 num_partitions=1 device_assignment=[[cuda(id=0)]]
+DEBUG:jax._src.compiler:get_compile_options XLA-AutoFDO profile: using XLA-AutoFDO profile version -1
+DEBUG:jax._src.compiler:Persistent compilation cache hit for 'jit_real'
+WARNING:jax._src.pjit:TRACING CACHE MISS at /home/antonio/dev/qdots_efficient/qdots_qll/models/single_dot_weak_coupling_GAME.py:89:23 (<module>) because:
+  never seen function:
+    transpose id=133165965861696 defined at /home/antonio/miniconda3/envs/jax_qdots/lib/python3.12/site-packages/jax/_src/dispatch.py:93
+DEBUG:jax._src.compiler:get_compile_options: num_replicas=1 num_partitions=1 device_assignment=[[cuda(id=0)]]
+DEBUG:jax._src.compiler:get_compile_options XLA-AutoFDO profile: using XLA-AutoFDO profile version -1
+DEBUG:jax._src.compiler:Persistent compilation cache hit for 'jit_transpose'
+WARNING:jax._src.pjit:TRACING CACHE MISS at /home/antonio/dev/qdots_efficient/profiling/cache.py:27:4 (<module>) because:
+  for convert_element_type defined at /home/antonio/miniconda3/envs/jax_qdots/lib/python3.12/site-packages/jax/_src/dispatch.py:93
+  never seen input type signature:
+    args[0]: f32[]
+  closest seen input type signature has 1 mismatches, including:
+    * at args[0], seen f32[4], but now given f32[]
+DEBUG:jax._src.compiler:get_compile_options: num_replicas=1 num_partitions=1 device_assignment=[[cuda(id=0)]]
+DEBUG:jax._src.compiler:get_compile_options XLA-AutoFDO profile: using XLA-AutoFDO profile version -1
+DEBUG:jax._src.compiler:Persistent compilation cache hit for 'jit_convert_element_type'
+WARNING:jax._src.pjit:TRACING CACHE MISS at /home/antonio/dev/qdots_efficient/profiling/cache.py:27:4 (<module>) because:
+  never seen function:
+    broadcast_in_dim id=133165966042400 defined at /home/antonio/miniconda3/envs/jax_qdots/lib/python3.12/site-packages/jax/_src/dispatch.py:93
+DEBUG:jax._src.compiler:get_compile_options: num_replicas=1 num_partitions=1 device_assignment=[[cuda(id=0)]]
+DEBUG:jax._src.compiler:get_compile_options XLA-AutoFDO profile: using XLA-AutoFDO profile version -1
+DEBUG:jax._src.compiler:Persistent compilation cache hit for 'jit_broadcast_in_dim'
+WARNING:jax._src.dispatch:Finished tracing + transforming convert_element_type for pjit in 0.00022745132446289062 sec
+WARNING:jax._src.pjit:TRACING CACHE MISS at /home/antonio/dev/qdots_efficient/profiling/cache.py:36:14 (<module>) because:
+  never seen function:
+    convert_element_type id=133165964191328 defined at /home/antonio/miniconda3/envs/jax_qdots/lib/python3.12/site-packages/jax/_src/dispatch.py:93
+WARNING:jax._src.interpreters.pxla:Compiling convert_element_type for with global shapes and types [ShapedArray(float32[])]. Argument mapping: [UnspecifiedValue].
+WARNING:jax._src.dispatch:Finished jaxpr to MLIR module conversion jit(convert_element_type) in 0.0015151500701904297 sec
+DEBUG:jax._src.compiler:get_compile_options: num_replicas=1 num_partitions=1 device_assignment=[[cuda(id=0)]]
+DEBUG:jax._src.compiler:get_compile_options XLA-AutoFDO profile: using XLA-AutoFDO profile version -1
+DEBUG:jax._src.compiler:Persistent compilation cache hit for 'jit_convert_element_type'
+WARNING:jax._src.dispatch:Finished XLA compilation of jit(convert_element_type) in 0.0009403228759765625 sec
+WARNING:jax._src.dispatch:Finished tracing + transforming add for pjit in 0.0003490447998046875 sec
+WARNING:jax._src.dispatch:Finished tracing + transforming fn1 for pjit in 0.0008444786071777344 sec
+WARNING:jax._src.pjit:TRACING CACHE MISS at /home/antonio/dev/qdots_efficient/profiling/cache.py:36:10 (<module>) because:
+  never seen function:
+    fn1 id=133165964189728 defined at /home/antonio/dev/qdots_efficient/profiling/cache.py:30
+WARNING:jax._src.interpreters.pxla:Compiling fn1 for with global shapes and types [ShapedArray(float32[], weak_type=True)]. Argument mapping: [UnspecifiedValue].
+WARNING:jax._src.dispatch:Finished jaxpr to MLIR module conversion jit(fn1) in 1.2150321006774902 sec
+DEBUG:jax._src.compiler:get_compile_options: num_replicas=1 num_partitions=1 device_assignment=[[cuda(id=0)]]
+DEBUG:jax._src.compiler:get_compile_options XLA-AutoFDO profile: using XLA-AutoFDO profile version -1
+DEBUG:jax._src.compiler:Persistent compilation cache hit for 'jit_fn1'
+WARNING:jax._src.dispatch:Finished XLA compilation of jit(fn1) in 0.0017659664154052734 sec
+DEBUG:matplotlib:matplotlib data path: /home/antonio/miniconda3/envs/jax_qdots/lib/python3.12/site-packages/matplotlib/mpl-data
+DEBUG:matplotlib:CONFIGDIR=/home/antonio/.config/matplotlib
+DEBUG:matplotlib:interactive is False
+DEBUG:matplotlib:platform is linux
+DEBUG:matplotlib:CACHEDIR=/home/antonio/.cache/matplotlib
+DEBUG:matplotlib.font_manager:Using fontManager instance from /home/antonio/.cache/matplotlib/fontlist-v330.json
+WARNING:jax._src.pjit:TRACING CACHE MISS at /home/antonio/dev/qdots_efficient/qdots_qll/models/single_dot_weak_coupling_GAME.py:22:8 (<module>) because:
+  never seen function:
+    convert_element_type id=123371909701824 defined at /home/antonio/miniconda3/envs/jax_qdots/lib/python3.12/site-packages/jax/_src/dispatch.py:93
+INFO:jax._src.xla_bridge:Unable to initialize backend 'rocm': module 'jaxlib.xla_extension' has no attribute 'GpuAllocatorConfig'
+INFO:jax._src.xla_bridge:Unable to initialize backend 'tpu': INTERNAL: Failed to open libtpu.so: libtpu.so: cannot open shared object file: No such file or directory
+DEBUG:jax._src.compiler:get_compile_options: num_replicas=1 num_partitions=1 device_assignment=[[cuda(id=0)]]
+DEBUG:jax._src.compiler:get_compile_options XLA-AutoFDO profile: using XLA-AutoFDO profile version -1
+DEBUG:jax._src.compiler:Persistent compilation cache hit for 'jit_convert_element_type'
+WARNING:jax._src.pjit:TRACING CACHE MISS at /home/antonio/dev/qdots_efficient/qdots_qll/models/single_dot_weak_coupling_GAME.py:28:8 (<module>) because:
+  never seen function:
+    convert_element_type id=123371909403392 defined at /home/antonio/miniconda3/envs/jax_qdots/lib/python3.12/site-packages/jax/_src/dispatch.py:93
+DEBUG:jax._src.compiler:get_compile_options: num_replicas=1 num_partitions=1 device_assignment=[[cuda(id=0)]]
+DEBUG:jax._src.compiler:get_compile_options XLA-AutoFDO profile: using XLA-AutoFDO profile version -1
+DEBUG:jax._src.compiler:Persistent compilation cache hit for 'jit_convert_element_type'
+WARNING:jax._src.pjit:TRACING CACHE MISS at /home/antonio/dev/qdots_efficient/qdots_qll/models/single_dot_weak_coupling_GAME.py:20:5 (<module>) because:
+  for convert_element_type defined at /home/antonio/miniconda3/envs/jax_qdots/lib/python3.12/site-packages/jax/_src/dispatch.py:93
+  never seen input type signature:
+    args[0]: i32[2,2]
+  closest seen input type signature has 1 mismatches, including:
+    * at args[0], seen c64[2,2], but now given i32[2,2]
+DEBUG:jax._src.compiler:get_compile_options: num_replicas=1 num_partitions=1 device_assignment=[[cuda(id=0)]]
+DEBUG:jax._src.compiler:get_compile_options XLA-AutoFDO profile: using XLA-AutoFDO profile version -1
+DEBUG:jax._src.compiler:Persistent compilation cache hit for 'jit_convert_element_type'
+WARNING:jax._src.pjit:TRACING CACHE MISS at /home/antonio/dev/qdots_efficient/qdots_qll/models/single_dot_weak_coupling_GAME.py:20:5 (<module>) because:
+  never seen function:
+    broadcast_in_dim id=123371699461696 defined at /home/antonio/miniconda3/envs/jax_qdots/lib/python3.12/site-packages/jax/_src/dispatch.py:93
+DEBUG:jax._src.compiler:get_compile_options: num_replicas=1 num_partitions=1 device_assignment=[[cuda(id=0)]]
+DEBUG:jax._src.compiler:get_compile_options XLA-AutoFDO profile: using XLA-AutoFDO profile version -1
+DEBUG:jax._src.compiler:Persistent compilation cache hit for 'jit_broadcast_in_dim'
+WARNING:jax._src.pjit:TRACING CACHE MISS at /home/antonio/dev/qdots_efficient/qdots_qll/models/single_dot_weak_coupling_GAME.py:20:5 (<module>) because:
+  never seen function:
+    concatenate id=123371699465056 defined at /home/antonio/miniconda3/envs/jax_qdots/lib/python3.12/site-packages/jax/_src/dispatch.py:93
+  but seen another function defined on the same line; maybe the function is
+  being re-defined repeatedly, preventing caching?
+DEBUG:jax._src.compiler:get_compile_options: num_replicas=1 num_partitions=1 device_assignment=[[cuda(id=0)]]
+DEBUG:jax._src.compiler:get_compile_options XLA-AutoFDO profile: using XLA-AutoFDO profile version -1
+DEBUG:jax._src.compiler:Persistent compilation cache hit for 'jit_concatenate'
+DEBUG:jax._src.compiler:get_compile_options: num_replicas=1 num_partitions=1 device_assignment=[[cuda(id=0)]]
+DEBUG:jax._src.compiler:get_compile_options XLA-AutoFDO profile: using XLA-AutoFDO profile version -1
+DEBUG:jax._src.compiler:Persistent compilation cache hit for 'jit_sqrt'
+DEBUG:jax._src.compiler:get_compile_options: num_replicas=1 num_partitions=1 device_assignment=[[cuda(id=0)]]
+DEBUG:jax._src.compiler:get_compile_options XLA-AutoFDO profile: using XLA-AutoFDO profile version -1
+DEBUG:jax._src.compiler:Persistent compilation cache hit for 'jit_true_divide'
+WARNING:jax._src.pjit:TRACING CACHE MISS at /home/antonio/dev/qdots_efficient/qdots_qll/models/single_dot_weak_coupling_GAME.py:64:18 (<module>) because:
+  never seen function:
+    convert_element_type id=123371699635520 defined at /home/antonio/miniconda3/envs/jax_qdots/lib/python3.12/site-packages/jax/_src/dispatch.py:93
+DEBUG:jax._src.compiler:get_compile_options: num_replicas=1 num_partitions=1 device_assignment=[[cuda(id=0)]]
+DEBUG:jax._src.compiler:get_compile_options XLA-AutoFDO profile: using XLA-AutoFDO profile version -1
+DEBUG:jax._src.compiler:Persistent compilation cache hit for 'jit_convert_element_type'
+WARNING:jax._src.pjit:TRACING CACHE MISS at /home/antonio/dev/qdots_efficient/qdots_qll/models/single_dot_weak_coupling_GAME.py:67:4 (<module>) because:
+  for convert_element_type defined at /home/antonio/miniconda3/envs/jax_qdots/lib/python3.12/site-packages/jax/_src/dispatch.py:93
+  never seen input type signature:
+    args[0]: c64[6,2,2]
+  closest seen input type signature has 1 mismatches, including:
+    * at args[0], seen c64[2,2], but now given c64[6,2,2]
+DEBUG:jax._src.compiler:get_compile_options: num_replicas=1 num_partitions=1 device_assignment=[[cuda(id=0)]]
+DEBUG:jax._src.compiler:get_compile_options XLA-AutoFDO profile: using XLA-AutoFDO profile version -1
+DEBUG:jax._src.compiler:Persistent compilation cache hit for 'jit_convert_element_type'
+DEBUG:jax._src.compiler:get_compile_options: num_replicas=1 num_partitions=1 device_assignment=[[cuda(id=0)]]
+DEBUG:jax._src.compiler:get_compile_options XLA-AutoFDO profile: using XLA-AutoFDO profile version -1
+DEBUG:jax._src.compiler:Persistent compilation cache hit for 'jit_true_divide'
+WARNING:jax._src.pjit:TRACING CACHE MISS at /home/antonio/dev/qdots_efficient/qdots_qll/models/single_dot_weak_coupling_GAME.py:78:2 (<module>) because:
+  never seen function:
+    reshape id=123372532841216 defined at /home/antonio/miniconda3/envs/jax_qdots/lib/python3.12/site-packages/jax/_src/dispatch.py:93
+DEBUG:jax._src.compiler:get_compile_options: num_replicas=1 num_partitions=1 device_assignment=[[cuda(id=0)]]
+DEBUG:jax._src.compiler:get_compile_options XLA-AutoFDO profile: using XLA-AutoFDO profile version -1
+DEBUG:jax._src.compiler:Persistent compilation cache hit for 'jit_reshape'
+WARNING:jax._src.pjit:TRACING CACHE MISS at /home/antonio/dev/qdots_efficient/qdots_qll/models/single_dot_weak_coupling_GAME.py:87:20 (<module>) because:
+  for convert_element_type defined at /home/antonio/miniconda3/envs/jax_qdots/lib/python3.12/site-packages/jax/_src/dispatch.py:93
+  never seen input type signature:
+    args[0]: c64[4,2,2]
+  closest seen input type signature has 1 mismatches, including:
+    * at args[0], seen c64[2,2], but now given c64[4,2,2]
+DEBUG:jax._src.compiler:get_compile_options: num_replicas=1 num_partitions=1 device_assignment=[[cuda(id=0)]]
+DEBUG:jax._src.compiler:get_compile_options XLA-AutoFDO profile: using XLA-AutoFDO profile version -1
+DEBUG:jax._src.compiler:Persistent compilation cache hit for 'jit_convert_element_type'
+DEBUG:jax._src.compiler:get_compile_options: num_replicas=1 num_partitions=1 device_assignment=[[cuda(id=0)]]
+DEBUG:jax._src.compiler:get_compile_options XLA-AutoFDO profile: using XLA-AutoFDO profile version -1
+DEBUG:jax._src.compiler:Persistent compilation cache hit for 'jit__einsum'
+DEBUG:jax._src.compiler:get_compile_options: num_replicas=1 num_partitions=1 device_assignment=[[cuda(id=0)]]
+DEBUG:jax._src.compiler:get_compile_options XLA-AutoFDO profile: using XLA-AutoFDO profile version -1
+DEBUG:jax._src.compiler:Persistent compilation cache hit for 'jit_real'
+WARNING:jax._src.pjit:TRACING CACHE MISS at /home/antonio/dev/qdots_efficient/qdots_qll/models/single_dot_weak_coupling_GAME.py:89:23 (<module>) because:
+  never seen function:
+    transpose id=123371699462976 defined at /home/antonio/miniconda3/envs/jax_qdots/lib/python3.12/site-packages/jax/_src/dispatch.py:93
+DEBUG:jax._src.compiler:get_compile_options: num_replicas=1 num_partitions=1 device_assignment=[[cuda(id=0)]]
+DEBUG:jax._src.compiler:get_compile_options XLA-AutoFDO profile: using XLA-AutoFDO profile version -1
+DEBUG:jax._src.compiler:Persistent compilation cache hit for 'jit_transpose'
+WARNING:jax._src.pjit:TRACING CACHE MISS at /home/antonio/dev/qdots_efficient/profiling/cache.py:27:4 (<module>) because:
+  for convert_element_type defined at /home/antonio/miniconda3/envs/jax_qdots/lib/python3.12/site-packages/jax/_src/dispatch.py:93
+  never seen input type signature:
+    args[0]: f32[]
+  closest seen input type signature has 1 mismatches, including:
+    * at args[0], seen f32[4], but now given f32[]
+DEBUG:jax._src.compiler:get_compile_options: num_replicas=1 num_partitions=1 device_assignment=[[cuda(id=0)]]
+DEBUG:jax._src.compiler:get_compile_options XLA-AutoFDO profile: using XLA-AutoFDO profile version -1
+DEBUG:jax._src.compiler:Persistent compilation cache hit for 'jit_convert_element_type'
+WARNING:jax._src.pjit:TRACING CACHE MISS at /home/antonio/dev/qdots_efficient/profiling/cache.py:27:4 (<module>) because:
+  never seen function:
+    broadcast_in_dim id=123371699643520 defined at /home/antonio/miniconda3/envs/jax_qdots/lib/python3.12/site-packages/jax/_src/dispatch.py:93
+DEBUG:jax._src.compiler:get_compile_options: num_replicas=1 num_partitions=1 device_assignment=[[cuda(id=0)]]
+DEBUG:jax._src.compiler:get_compile_options XLA-AutoFDO profile: using XLA-AutoFDO profile version -1
+DEBUG:jax._src.compiler:Persistent compilation cache hit for 'jit_broadcast_in_dim'
+DEBUG:tensorflow:Falling back to TensorFlow client; we recommended you install the Cloud TPU client directly with pip install cloud-tpu-client.
+DEBUG:h5py._conv:Creating converter from 7 to 5
+DEBUG:h5py._conv:Creating converter from 5 to 7
+DEBUG:h5py._conv:Creating converter from 7 to 5
+DEBUG:h5py._conv:Creating converter from 5 to 7
+WARNING:jax._src.dispatch:Finished tracing + transforming convert_element_type for pjit in 0.0006601810455322266 sec
+WARNING:jax._src.pjit:TRACING CACHE MISS at /home/antonio/dev/qdots_efficient/profiling/cache.py:37:14 (<module>) because:
+  never seen function:
+    convert_element_type id=123371699873216 defined at /home/antonio/miniconda3/envs/jax_qdots/lib/python3.12/site-packages/jax/_src/dispatch.py:93
+WARNING:jax._src.interpreters.pxla:Compiling convert_element_type for with global shapes and types [ShapedArray(float32[])]. Argument mapping: [UnspecifiedValue].
+WARNING:jax._src.dispatch:Finished jaxpr to MLIR module conversion jit(convert_element_type) in 0.0024292469024658203 sec
+DEBUG:jax._src.compiler:get_compile_options: num_replicas=1 num_partitions=1 device_assignment=[[cuda(id=0)]]
+DEBUG:jax._src.compiler:get_compile_options XLA-AutoFDO profile: using XLA-AutoFDO profile version -1
+DEBUG:jax._src.compiler:Persistent compilation cache hit for 'jit_convert_element_type'
+WARNING:jax._src.dispatch:Finished XLA compilation of jit(convert_element_type) in 0.001394510269165039 sec
+WARNING:jax._src.dispatch:Finished tracing + transforming add for pjit in 0.0008852481842041016 sec
+WARNING:jax._src.dispatch:Finished tracing + transforming fn1 for pjit in 0.0017960071563720703 sec
+WARNING:jax._src.pjit:TRACING CACHE MISS at /home/antonio/dev/qdots_efficient/profiling/cache.py:37:10 (<module>) because:
+  never seen function:
+    fn1 id=123371699871616 defined at /home/antonio/dev/qdots_efficient/profiling/cache.py:30
+WARNING:jax._src.interpreters.pxla:Compiling fn1 for with global shapes and types [ShapedArray(float32[], weak_type=True)]. Argument mapping: [UnspecifiedValue].
+WARNING:jax._src.dispatch:Finished jaxpr to MLIR module conversion jit(fn1) in 1.153684139251709 sec
+DEBUG:jax._src.compiler:get_compile_options: num_replicas=1 num_partitions=1 device_assignment=[[cuda(id=0)]]
+DEBUG:jax._src.compiler:get_compile_options XLA-AutoFDO profile: using XLA-AutoFDO profile version -1
+DEBUG:jax._src.compiler:Persistent compilation cache hit for 'jit_fn1'
+WARNING:jax._src.dispatch:Finished XLA compilation of jit(fn1) in 0.001672983169555664 sec
+DEBUG:matplotlib:matplotlib data path: /home/antonio/miniconda3/envs/jax_qdots/lib/python3.12/site-packages/matplotlib/mpl-data
+DEBUG:matplotlib:CONFIGDIR=/home/antonio/.config/matplotlib
+DEBUG:matplotlib:interactive is False
+DEBUG:matplotlib:platform is linux
+DEBUG:matplotlib:CACHEDIR=/home/antonio/.cache/matplotlib
+DEBUG:matplotlib.font_manager:Using fontManager instance from /home/antonio/.cache/matplotlib/fontlist-v330.json
+WARNING:jax._src.pjit:TRACING CACHE MISS at /home/antonio/dev/qdots_efficient/qdots_qll/models/single_dot_weak_coupling_GAME.py:22:8 (<module>) because:
+  never seen function:
+    convert_element_type id=133505943969984 defined at /home/antonio/miniconda3/envs/jax_qdots/lib/python3.12/site-packages/jax/_src/dispatch.py:93
+INFO:jax._src.xla_bridge:Unable to initialize backend 'rocm': module 'jaxlib.xla_extension' has no attribute 'GpuAllocatorConfig'
+INFO:jax._src.xla_bridge:Unable to initialize backend 'tpu': INTERNAL: Failed to open libtpu.so: libtpu.so: cannot open shared object file: No such file or directory
+DEBUG:jax._src.compiler:get_compile_options: num_replicas=1 num_partitions=1 device_assignment=[[cuda(id=0)]]
+DEBUG:jax._src.compiler:get_compile_options XLA-AutoFDO profile: using XLA-AutoFDO profile version -1
+DEBUG:jax._src.compiler:Persistent compilation cache hit for 'jit_convert_element_type'
+WARNING:jax._src.pjit:TRACING CACHE MISS at /home/antonio/dev/qdots_efficient/qdots_qll/models/single_dot_weak_coupling_GAME.py:28:8 (<module>) because:
+  never seen function:
+    convert_element_type id=133505943671552 defined at /home/antonio/miniconda3/envs/jax_qdots/lib/python3.12/site-packages/jax/_src/dispatch.py:93
+DEBUG:jax._src.compiler:get_compile_options: num_replicas=1 num_partitions=1 device_assignment=[[cuda(id=0)]]
+DEBUG:jax._src.compiler:get_compile_options XLA-AutoFDO profile: using XLA-AutoFDO profile version -1
+DEBUG:jax._src.compiler:Persistent compilation cache hit for 'jit_convert_element_type'
+WARNING:jax._src.pjit:TRACING CACHE MISS at /home/antonio/dev/qdots_efficient/qdots_qll/models/single_dot_weak_coupling_GAME.py:20:5 (<module>) because:
+  for convert_element_type defined at /home/antonio/miniconda3/envs/jax_qdots/lib/python3.12/site-packages/jax/_src/dispatch.py:93
+  never seen input type signature:
+    args[0]: i32[2,2]
+  closest seen input type signature has 1 mismatches, including:
+    * at args[0], seen c64[2,2], but now given i32[2,2]
+DEBUG:jax._src.compiler:get_compile_options: num_replicas=1 num_partitions=1 device_assignment=[[cuda(id=0)]]
+DEBUG:jax._src.compiler:get_compile_options XLA-AutoFDO profile: using XLA-AutoFDO profile version -1
+DEBUG:jax._src.compiler:Persistent compilation cache hit for 'jit_convert_element_type'
+WARNING:jax._src.pjit:TRACING CACHE MISS at /home/antonio/dev/qdots_efficient/qdots_qll/models/single_dot_weak_coupling_GAME.py:20:5 (<module>) because:
+  never seen function:
+    broadcast_in_dim id=133505733385792 defined at /home/antonio/miniconda3/envs/jax_qdots/lib/python3.12/site-packages/jax/_src/dispatch.py:93
+DEBUG:jax._src.compiler:get_compile_options: num_replicas=1 num_partitions=1 device_assignment=[[cuda(id=0)]]
+DEBUG:jax._src.compiler:get_compile_options XLA-AutoFDO profile: using XLA-AutoFDO profile version -1
+DEBUG:jax._src.compiler:Persistent compilation cache hit for 'jit_broadcast_in_dim'
+WARNING:jax._src.pjit:TRACING CACHE MISS at /home/antonio/dev/qdots_efficient/qdots_qll/models/single_dot_weak_coupling_GAME.py:20:5 (<module>) because:
+  never seen function:
+    concatenate id=133505733389152 defined at /home/antonio/miniconda3/envs/jax_qdots/lib/python3.12/site-packages/jax/_src/dispatch.py:93
+  but seen another function defined on the same line; maybe the function is
+  being re-defined repeatedly, preventing caching?
+DEBUG:jax._src.compiler:get_compile_options: num_replicas=1 num_partitions=1 device_assignment=[[cuda(id=0)]]
+DEBUG:jax._src.compiler:get_compile_options XLA-AutoFDO profile: using XLA-AutoFDO profile version -1
+DEBUG:jax._src.compiler:Persistent compilation cache hit for 'jit_concatenate'
+DEBUG:jax._src.compiler:get_compile_options: num_replicas=1 num_partitions=1 device_assignment=[[cuda(id=0)]]
+DEBUG:jax._src.compiler:get_compile_options XLA-AutoFDO profile: using XLA-AutoFDO profile version -1
+DEBUG:jax._src.compiler:Persistent compilation cache hit for 'jit_sqrt'
+DEBUG:jax._src.compiler:get_compile_options: num_replicas=1 num_partitions=1 device_assignment=[[cuda(id=0)]]
+DEBUG:jax._src.compiler:get_compile_options XLA-AutoFDO profile: using XLA-AutoFDO profile version -1
+DEBUG:jax._src.compiler:Persistent compilation cache hit for 'jit_true_divide'
+WARNING:jax._src.pjit:TRACING CACHE MISS at /home/antonio/dev/qdots_efficient/qdots_qll/models/single_dot_weak_coupling_GAME.py:64:18 (<module>) because:
+  never seen function:
+    convert_element_type id=133505733575840 defined at /home/antonio/miniconda3/envs/jax_qdots/lib/python3.12/site-packages/jax/_src/dispatch.py:93
+DEBUG:jax._src.compiler:get_compile_options: num_replicas=1 num_partitions=1 device_assignment=[[cuda(id=0)]]
+DEBUG:jax._src.compiler:get_compile_options XLA-AutoFDO profile: using XLA-AutoFDO profile version -1
+DEBUG:jax._src.compiler:Persistent compilation cache hit for 'jit_convert_element_type'
+WARNING:jax._src.pjit:TRACING CACHE MISS at /home/antonio/dev/qdots_efficient/qdots_qll/models/single_dot_weak_coupling_GAME.py:67:4 (<module>) because:
+  for convert_element_type defined at /home/antonio/miniconda3/envs/jax_qdots/lib/python3.12/site-packages/jax/_src/dispatch.py:93
+  never seen input type signature:
+    args[0]: c64[6,2,2]
+  closest seen input type signature has 1 mismatches, including:
+    * at args[0], seen c64[2,2], but now given c64[6,2,2]
+DEBUG:jax._src.compiler:get_compile_options: num_replicas=1 num_partitions=1 device_assignment=[[cuda(id=0)]]
+DEBUG:jax._src.compiler:get_compile_options XLA-AutoFDO profile: using XLA-AutoFDO profile version -1
+DEBUG:jax._src.compiler:Persistent compilation cache hit for 'jit_convert_element_type'
+DEBUG:jax._src.compiler:get_compile_options: num_replicas=1 num_partitions=1 device_assignment=[[cuda(id=0)]]
+DEBUG:jax._src.compiler:get_compile_options XLA-AutoFDO profile: using XLA-AutoFDO profile version -1
+DEBUG:jax._src.compiler:Persistent compilation cache hit for 'jit_true_divide'
+WARNING:jax._src.pjit:TRACING CACHE MISS at /home/antonio/dev/qdots_efficient/qdots_qll/models/single_dot_weak_coupling_GAME.py:78:2 (<module>) because:
+  never seen function:
+    reshape id=133506566863616 defined at /home/antonio/miniconda3/envs/jax_qdots/lib/python3.12/site-packages/jax/_src/dispatch.py:93
+DEBUG:jax._src.compiler:get_compile_options: num_replicas=1 num_partitions=1 device_assignment=[[cuda(id=0)]]
+DEBUG:jax._src.compiler:get_compile_options XLA-AutoFDO profile: using XLA-AutoFDO profile version -1
+DEBUG:jax._src.compiler:Persistent compilation cache hit for 'jit_reshape'
+WARNING:jax._src.pjit:TRACING CACHE MISS at /home/antonio/dev/qdots_efficient/qdots_qll/models/single_dot_weak_coupling_GAME.py:87:20 (<module>) because:
+  for convert_element_type defined at /home/antonio/miniconda3/envs/jax_qdots/lib/python3.12/site-packages/jax/_src/dispatch.py:93
+  never seen input type signature:
+    args[0]: c64[4,2,2]
+  closest seen input type signature has 1 mismatches, including:
+    * at args[0], seen c64[2,2], but now given c64[4,2,2]
+DEBUG:jax._src.compiler:get_compile_options: num_replicas=1 num_partitions=1 device_assignment=[[cuda(id=0)]]
+DEBUG:jax._src.compiler:get_compile_options XLA-AutoFDO profile: using XLA-AutoFDO profile version -1
+DEBUG:jax._src.compiler:Persistent compilation cache hit for 'jit_convert_element_type'
+DEBUG:jax._src.compiler:get_compile_options: num_replicas=1 num_partitions=1 device_assignment=[[cuda(id=0)]]
+DEBUG:jax._src.compiler:get_compile_options XLA-AutoFDO profile: using XLA-AutoFDO profile version -1
+DEBUG:jax._src.compiler:Persistent compilation cache hit for 'jit__einsum'
+DEBUG:jax._src.compiler:get_compile_options: num_replicas=1 num_partitions=1 device_assignment=[[cuda(id=0)]]
+DEBUG:jax._src.compiler:get_compile_options XLA-AutoFDO profile: using XLA-AutoFDO profile version -1
+DEBUG:jax._src.compiler:Persistent compilation cache hit for 'jit_real'
+WARNING:jax._src.pjit:TRACING CACHE MISS at /home/antonio/dev/qdots_efficient/qdots_qll/models/single_dot_weak_coupling_GAME.py:89:23 (<module>) because:
+  never seen function:
+    transpose id=133505733387072 defined at /home/antonio/miniconda3/envs/jax_qdots/lib/python3.12/site-packages/jax/_src/dispatch.py:93
+DEBUG:jax._src.compiler:get_compile_options: num_replicas=1 num_partitions=1 device_assignment=[[cuda(id=0)]]
+DEBUG:jax._src.compiler:get_compile_options XLA-AutoFDO profile: using XLA-AutoFDO profile version -1
+DEBUG:jax._src.compiler:Persistent compilation cache hit for 'jit_transpose'
+WARNING:jax._src.pjit:TRACING CACHE MISS at /home/antonio/dev/qdots_efficient/profiling/cache.py:27:4 (<module>) because:
+  for convert_element_type defined at /home/antonio/miniconda3/envs/jax_qdots/lib/python3.12/site-packages/jax/_src/dispatch.py:93
+  never seen input type signature:
+    args[0]: f32[]
+  closest seen input type signature has 1 mismatches, including:
+    * at args[0], seen f32[4], but now given f32[]
+DEBUG:jax._src.compiler:get_compile_options: num_replicas=1 num_partitions=1 device_assignment=[[cuda(id=0)]]
+DEBUG:jax._src.compiler:get_compile_options XLA-AutoFDO profile: using XLA-AutoFDO profile version -1
+DEBUG:jax._src.compiler:Persistent compilation cache hit for 'jit_convert_element_type'
+WARNING:jax._src.pjit:TRACING CACHE MISS at /home/antonio/dev/qdots_efficient/profiling/cache.py:27:4 (<module>) because:
+  never seen function:
+    broadcast_in_dim id=133505733584000 defined at /home/antonio/miniconda3/envs/jax_qdots/lib/python3.12/site-packages/jax/_src/dispatch.py:93
+DEBUG:jax._src.compiler:get_compile_options: num_replicas=1 num_partitions=1 device_assignment=[[cuda(id=0)]]
+DEBUG:jax._src.compiler:get_compile_options XLA-AutoFDO profile: using XLA-AutoFDO profile version -1
+DEBUG:jax._src.compiler:Persistent compilation cache hit for 'jit_broadcast_in_dim'
+DEBUG:tensorflow:Falling back to TensorFlow client; we recommended you install the Cloud TPU client directly with pip install cloud-tpu-client.
+DEBUG:h5py._conv:Creating converter from 7 to 5
+DEBUG:h5py._conv:Creating converter from 5 to 7
+DEBUG:h5py._conv:Creating converter from 7 to 5
+DEBUG:h5py._conv:Creating converter from 5 to 7
+WARNING:jax._src.dispatch:Finished tracing + transforming convert_element_type for pjit in 0.00048232078552246094 sec
+WARNING:jax._src.pjit:TRACING CACHE MISS at /home/antonio/dev/qdots_efficient/profiling/cache.py:37:12 (<module>) because:
+  never seen function:
+    convert_element_type id=133505733830080 defined at /home/antonio/miniconda3/envs/jax_qdots/lib/python3.12/site-packages/jax/_src/dispatch.py:93
+WARNING:jax._src.interpreters.pxla:Compiling convert_element_type for with global shapes and types [ShapedArray(float32[])]. Argument mapping: [UnspecifiedValue].
+WARNING:jax._src.dispatch:Finished jaxpr to MLIR module conversion jit(convert_element_type) in 0.001953601837158203 sec
+DEBUG:jax._src.compiler:get_compile_options: num_replicas=1 num_partitions=1 device_assignment=[[cuda(id=0)]]
+DEBUG:jax._src.compiler:get_compile_options XLA-AutoFDO profile: using XLA-AutoFDO profile version -1
+DEBUG:jax._src.compiler:Persistent compilation cache hit for 'jit_convert_element_type'
+WARNING:jax._src.dispatch:Finished XLA compilation of jit(convert_element_type) in 0.0014166831970214844 sec
+WARNING:jax._src.dispatch:Finished tracing + transforming add for pjit in 0.0008544921875 sec
+WARNING:jax._src.dispatch:Finished tracing + transforming fn1 for pjit in 0.001775979995727539 sec
+WARNING:jax._src.pjit:TRACING CACHE MISS at /home/antonio/dev/qdots_efficient/profiling/cache.py:37:8 (<module>) because:
+  never seen function:
+    fn1 id=133505733828480 defined at /home/antonio/dev/qdots_efficient/profiling/cache.py:30
+WARNING:jax._src.interpreters.pxla:Compiling fn1 for with global shapes and types [ShapedArray(float32[], weak_type=True)]. Argument mapping: [UnspecifiedValue].
+WARNING:jax._src.dispatch:Finished jaxpr to MLIR module conversion jit(fn1) in 1.1138579845428467 sec
+DEBUG:jax._src.compiler:get_compile_options: num_replicas=1 num_partitions=1 device_assignment=[[cuda(id=0)]]
+DEBUG:jax._src.compiler:get_compile_options XLA-AutoFDO profile: using XLA-AutoFDO profile version -1
+DEBUG:jax._src.compiler:Persistent compilation cache hit for 'jit_fn1'
+WARNING:jax._src.dispatch:Finished XLA compilation of jit(fn1) in 0.0014531612396240234 sec
+DEBUG:matplotlib:matplotlib data path: /home/antonio/miniconda3/envs/jax_qdots/lib/python3.12/site-packages/matplotlib/mpl-data
+DEBUG:matplotlib:CONFIGDIR=/home/antonio/.config/matplotlib
+DEBUG:matplotlib:interactive is False
+DEBUG:matplotlib:platform is linux
+DEBUG:matplotlib:CACHEDIR=/home/antonio/.cache/matplotlib
+DEBUG:matplotlib.font_manager:Using fontManager instance from /home/antonio/.cache/matplotlib/fontlist-v330.json
+WARNING:jax._src.pjit:TRACING CACHE MISS at /home/antonio/dev/qdots_efficient/qdots_qll/models/single_dot_weak_coupling_GAME.py:22:8 (<module>) because:
+  never seen function:
+    convert_element_type id=135412412276928 defined at /home/antonio/miniconda3/envs/jax_qdots/lib/python3.12/site-packages/jax/_src/dispatch.py:93
+INFO:jax._src.xla_bridge:Unable to initialize backend 'rocm': module 'jaxlib.xla_extension' has no attribute 'GpuAllocatorConfig'
+INFO:jax._src.xla_bridge:Unable to initialize backend 'tpu': INTERNAL: Failed to open libtpu.so: libtpu.so: cannot open shared object file: No such file or directory
+DEBUG:jax._src.compiler:get_compile_options: num_replicas=1 num_partitions=1 device_assignment=[[cuda(id=0)]]
+DEBUG:jax._src.compiler:get_compile_options XLA-AutoFDO profile: using XLA-AutoFDO profile version -1
+DEBUG:jax._src.compiler:Persistent compilation cache hit for 'jit_convert_element_type'
+WARNING:jax._src.pjit:TRACING CACHE MISS at /home/antonio/dev/qdots_efficient/qdots_qll/models/single_dot_weak_coupling_GAME.py:28:8 (<module>) because:
+  never seen function:
+    convert_element_type id=135412412011264 defined at /home/antonio/miniconda3/envs/jax_qdots/lib/python3.12/site-packages/jax/_src/dispatch.py:93
+DEBUG:jax._src.compiler:get_compile_options: num_replicas=1 num_partitions=1 device_assignment=[[cuda(id=0)]]
+DEBUG:jax._src.compiler:get_compile_options XLA-AutoFDO profile: using XLA-AutoFDO profile version -1
+DEBUG:jax._src.compiler:Persistent compilation cache hit for 'jit_convert_element_type'
+WARNING:jax._src.pjit:TRACING CACHE MISS at /home/antonio/dev/qdots_efficient/qdots_qll/models/single_dot_weak_coupling_GAME.py:20:5 (<module>) because:
+  for convert_element_type defined at /home/antonio/miniconda3/envs/jax_qdots/lib/python3.12/site-packages/jax/_src/dispatch.py:93
+  never seen input type signature:
+    args[0]: i32[2,2]
+  closest seen input type signature has 1 mismatches, including:
+    * at args[0], seen c64[2,2], but now given i32[2,2]
+DEBUG:jax._src.compiler:get_compile_options: num_replicas=1 num_partitions=1 device_assignment=[[cuda(id=0)]]
+DEBUG:jax._src.compiler:get_compile_options XLA-AutoFDO profile: using XLA-AutoFDO profile version -1
+DEBUG:jax._src.compiler:Persistent compilation cache hit for 'jit_convert_element_type'
+WARNING:jax._src.pjit:TRACING CACHE MISS at /home/antonio/dev/qdots_efficient/qdots_qll/models/single_dot_weak_coupling_GAME.py:20:5 (<module>) because:
+  never seen function:
+    broadcast_in_dim id=135412202020416 defined at /home/antonio/miniconda3/envs/jax_qdots/lib/python3.12/site-packages/jax/_src/dispatch.py:93
+DEBUG:jax._src.compiler:get_compile_options: num_replicas=1 num_partitions=1 device_assignment=[[cuda(id=0)]]
+DEBUG:jax._src.compiler:get_compile_options XLA-AutoFDO profile: using XLA-AutoFDO profile version -1
+DEBUG:jax._src.compiler:Persistent compilation cache hit for 'jit_broadcast_in_dim'
+WARNING:jax._src.pjit:TRACING CACHE MISS at /home/antonio/dev/qdots_efficient/qdots_qll/models/single_dot_weak_coupling_GAME.py:20:5 (<module>) because:
+  never seen function:
+    concatenate id=135412202023776 defined at /home/antonio/miniconda3/envs/jax_qdots/lib/python3.12/site-packages/jax/_src/dispatch.py:93
+  but seen another function defined on the same line; maybe the function is
+  being re-defined repeatedly, preventing caching?
+DEBUG:jax._src.compiler:get_compile_options: num_replicas=1 num_partitions=1 device_assignment=[[cuda(id=0)]]
+DEBUG:jax._src.compiler:get_compile_options XLA-AutoFDO profile: using XLA-AutoFDO profile version -1
+DEBUG:jax._src.compiler:Persistent compilation cache hit for 'jit_concatenate'
+DEBUG:jax._src.compiler:get_compile_options: num_replicas=1 num_partitions=1 device_assignment=[[cuda(id=0)]]
+DEBUG:jax._src.compiler:get_compile_options XLA-AutoFDO profile: using XLA-AutoFDO profile version -1
+DEBUG:jax._src.compiler:Persistent compilation cache hit for 'jit_sqrt'
+DEBUG:jax._src.compiler:get_compile_options: num_replicas=1 num_partitions=1 device_assignment=[[cuda(id=0)]]
+DEBUG:jax._src.compiler:get_compile_options XLA-AutoFDO profile: using XLA-AutoFDO profile version -1
+DEBUG:jax._src.compiler:Persistent compilation cache hit for 'jit_true_divide'
+WARNING:jax._src.pjit:TRACING CACHE MISS at /home/antonio/dev/qdots_efficient/qdots_qll/models/single_dot_weak_coupling_GAME.py:64:18 (<module>) because:
+  never seen function:
+    convert_element_type id=135412202194400 defined at /home/antonio/miniconda3/envs/jax_qdots/lib/python3.12/site-packages/jax/_src/dispatch.py:93
+DEBUG:jax._src.compiler:get_compile_options: num_replicas=1 num_partitions=1 device_assignment=[[cuda(id=0)]]
+DEBUG:jax._src.compiler:get_compile_options XLA-AutoFDO profile: using XLA-AutoFDO profile version -1
+DEBUG:jax._src.compiler:Persistent compilation cache hit for 'jit_convert_element_type'
+WARNING:jax._src.pjit:TRACING CACHE MISS at /home/antonio/dev/qdots_efficient/qdots_qll/models/single_dot_weak_coupling_GAME.py:67:4 (<module>) because:
+  for convert_element_type defined at /home/antonio/miniconda3/envs/jax_qdots/lib/python3.12/site-packages/jax/_src/dispatch.py:93
+  never seen input type signature:
+    args[0]: c64[6,2,2]
+  closest seen input type signature has 1 mismatches, including:
+    * at args[0], seen c64[2,2], but now given c64[6,2,2]
+DEBUG:jax._src.compiler:get_compile_options: num_replicas=1 num_partitions=1 device_assignment=[[cuda(id=0)]]
+DEBUG:jax._src.compiler:get_compile_options XLA-AutoFDO profile: using XLA-AutoFDO profile version -1
+DEBUG:jax._src.compiler:Persistent compilation cache hit for 'jit_convert_element_type'
+DEBUG:jax._src.compiler:get_compile_options: num_replicas=1 num_partitions=1 device_assignment=[[cuda(id=0)]]
+DEBUG:jax._src.compiler:get_compile_options XLA-AutoFDO profile: using XLA-AutoFDO profile version -1
+DEBUG:jax._src.compiler:Persistent compilation cache hit for 'jit_true_divide'
+WARNING:jax._src.pjit:TRACING CACHE MISS at /home/antonio/dev/qdots_efficient/qdots_qll/models/single_dot_weak_coupling_GAME.py:78:2 (<module>) because:
+  never seen function:
+    reshape id=135413672861888 defined at /home/antonio/miniconda3/envs/jax_qdots/lib/python3.12/site-packages/jax/_src/dispatch.py:93
+DEBUG:jax._src.compiler:get_compile_options: num_replicas=1 num_partitions=1 device_assignment=[[cuda(id=0)]]
+DEBUG:jax._src.compiler:get_compile_options XLA-AutoFDO profile: using XLA-AutoFDO profile version -1
+DEBUG:jax._src.compiler:Persistent compilation cache hit for 'jit_reshape'
+WARNING:jax._src.pjit:TRACING CACHE MISS at /home/antonio/dev/qdots_efficient/qdots_qll/models/single_dot_weak_coupling_GAME.py:87:20 (<module>) because:
+  for convert_element_type defined at /home/antonio/miniconda3/envs/jax_qdots/lib/python3.12/site-packages/jax/_src/dispatch.py:93
+  never seen input type signature:
+    args[0]: c64[4,2,2]
+  closest seen input type signature has 1 mismatches, including:
+    * at args[0], seen c64[2,2], but now given c64[4,2,2]
+DEBUG:jax._src.compiler:get_compile_options: num_replicas=1 num_partitions=1 device_assignment=[[cuda(id=0)]]
+DEBUG:jax._src.compiler:get_compile_options XLA-AutoFDO profile: using XLA-AutoFDO profile version -1
+DEBUG:jax._src.compiler:Persistent compilation cache hit for 'jit_convert_element_type'
+DEBUG:jax._src.compiler:get_compile_options: num_replicas=1 num_partitions=1 device_assignment=[[cuda(id=0)]]
+DEBUG:jax._src.compiler:get_compile_options XLA-AutoFDO profile: using XLA-AutoFDO profile version -1
+DEBUG:jax._src.compiler:Persistent compilation cache hit for 'jit__einsum'
+DEBUG:jax._src.compiler:get_compile_options: num_replicas=1 num_partitions=1 device_assignment=[[cuda(id=0)]]
+DEBUG:jax._src.compiler:get_compile_options XLA-AutoFDO profile: using XLA-AutoFDO profile version -1
+DEBUG:jax._src.compiler:Persistent compilation cache hit for 'jit_real'
+WARNING:jax._src.pjit:TRACING CACHE MISS at /home/antonio/dev/qdots_efficient/qdots_qll/models/single_dot_weak_coupling_GAME.py:89:23 (<module>) because:
+  never seen function:
+    transpose id=135412202021696 defined at /home/antonio/miniconda3/envs/jax_qdots/lib/python3.12/site-packages/jax/_src/dispatch.py:93
+DEBUG:jax._src.compiler:get_compile_options: num_replicas=1 num_partitions=1 device_assignment=[[cuda(id=0)]]
+DEBUG:jax._src.compiler:get_compile_options XLA-AutoFDO profile: using XLA-AutoFDO profile version -1
+DEBUG:jax._src.compiler:Persistent compilation cache hit for 'jit_transpose'
+WARNING:jax._src.pjit:TRACING CACHE MISS at /home/antonio/dev/qdots_efficient/profiling/cache.py:27:4 (<module>) because:
+  for convert_element_type defined at /home/antonio/miniconda3/envs/jax_qdots/lib/python3.12/site-packages/jax/_src/dispatch.py:93
+  never seen input type signature:
+    args[0]: f32[]
+  closest seen input type signature has 1 mismatches, including:
+    * at args[0], seen f32[4], but now given f32[]
+DEBUG:jax._src.compiler:get_compile_options: num_replicas=1 num_partitions=1 device_assignment=[[cuda(id=0)]]
+DEBUG:jax._src.compiler:get_compile_options XLA-AutoFDO profile: using XLA-AutoFDO profile version -1
+DEBUG:jax._src.compiler:Persistent compilation cache hit for 'jit_convert_element_type'
+WARNING:jax._src.pjit:TRACING CACHE MISS at /home/antonio/dev/qdots_efficient/profiling/cache.py:27:4 (<module>) because:
+  never seen function:
+    broadcast_in_dim id=135412202202240 defined at /home/antonio/miniconda3/envs/jax_qdots/lib/python3.12/site-packages/jax/_src/dispatch.py:93
+DEBUG:jax._src.compiler:get_compile_options: num_replicas=1 num_partitions=1 device_assignment=[[cuda(id=0)]]
+DEBUG:jax._src.compiler:get_compile_options XLA-AutoFDO profile: using XLA-AutoFDO profile version -1
+DEBUG:jax._src.compiler:Persistent compilation cache hit for 'jit_broadcast_in_dim'
+DEBUG:tensorflow:Falling back to TensorFlow client; we recommended you install the Cloud TPU client directly with pip install cloud-tpu-client.
+DEBUG:h5py._conv:Creating converter from 7 to 5
+DEBUG:h5py._conv:Creating converter from 5 to 7
+DEBUG:h5py._conv:Creating converter from 7 to 5
+DEBUG:h5py._conv:Creating converter from 5 to 7
+WARNING:jax._src.dispatch:Finished tracing + transforming convert_element_type for pjit in 0.0005195140838623047 sec
+WARNING:jax._src.pjit:TRACING CACHE MISS at /home/antonio/dev/qdots_efficient/profiling/cache.py:37:12 (<module>) because:
+  never seen function:
+    convert_element_type id=135412202431936 defined at /home/antonio/miniconda3/envs/jax_qdots/lib/python3.12/site-packages/jax/_src/dispatch.py:93
+WARNING:jax._src.interpreters.pxla:Compiling convert_element_type for with global shapes and types [ShapedArray(float32[])]. Argument mapping: [UnspecifiedValue].
+WARNING:jax._src.dispatch:Finished jaxpr to MLIR module conversion jit(convert_element_type) in 0.0019981861114501953 sec
+DEBUG:jax._src.compiler:get_compile_options: num_replicas=1 num_partitions=1 device_assignment=[[cuda(id=0)]]
+DEBUG:jax._src.compiler:get_compile_options XLA-AutoFDO profile: using XLA-AutoFDO profile version -1
+DEBUG:jax._src.compiler:Persistent compilation cache hit for 'jit_convert_element_type'
+WARNING:jax._src.dispatch:Finished XLA compilation of jit(convert_element_type) in 0.001512765884399414 sec
+WARNING:jax._src.dispatch:Finished tracing + transforming add for pjit in 0.0009942054748535156 sec
+WARNING:jax._src.dispatch:Finished tracing + transforming fn1 for pjit in 0.0020406246185302734 sec
+WARNING:jax._src.pjit:TRACING CACHE MISS at /home/antonio/dev/qdots_efficient/profiling/cache.py:37:8 (<module>) because:
+  never seen function:
+    fn1 id=135412202430336 defined at /home/antonio/dev/qdots_efficient/profiling/cache.py:30
+WARNING:jax._src.interpreters.pxla:Compiling fn1 for with global shapes and types [ShapedArray(float32[], weak_type=True)]. Argument mapping: [UnspecifiedValue].
+WARNING:jax._src.dispatch:Finished jaxpr to MLIR module conversion jit(fn1) in 1.1598949432373047 sec
+DEBUG:jax._src.compiler:get_compile_options: num_replicas=1 num_partitions=1 device_assignment=[[cuda(id=0)]]
+DEBUG:jax._src.compiler:get_compile_options XLA-AutoFDO profile: using XLA-AutoFDO profile version -1
+DEBUG:jax._src.compiler:Persistent compilation cache hit for 'jit_fn1'
+WARNING:jax._src.dispatch:Finished XLA compilation of jit(fn1) in 0.0016422271728515625 sec
