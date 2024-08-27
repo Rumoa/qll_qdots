@@ -208,7 +208,7 @@ class MetropolisSampler(Resampler):
         self.boundaries = boundaries
         self.model = model
 
-    # @jax.jit
+    @jax.jit
     def resample(
         self, subkey, distribution: Distribution, data, *args, **kwargs
     ) -> Distribution:
@@ -245,7 +245,7 @@ class MetropolisSampler(Resampler):
             shape=(no_particles,),
             p=dist.weights / dist.weights.sum(),
         )
-        new_locs
+
         return new_locs
 
     def generate_proposals(
@@ -310,6 +310,7 @@ class LiuWestResampler(Resampler):
 
         return new_locs
 
+    @jax.jit
     def resample(
         self, subkey, distribution: Distribution, *args, **kwargs
     ) -> Distribution:
@@ -332,7 +333,7 @@ class LiuWestResampler(Resampler):
             high=self.boundaries[:, 1],
         ).sample(seed=subkey, sample_shape=1)[0, :, :]
 
-        no_particles = distribution.particles_locations.shape[0]
+        no_particles = distribution.no_particles
         dist_new_locs = Distribution(
             particles_locations=new_locs,
             weights=jnp.ones(no_particles) / no_particles,

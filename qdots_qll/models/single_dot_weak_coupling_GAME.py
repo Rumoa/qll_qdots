@@ -219,7 +219,10 @@ class SingleDotWeakCouplingGAME(BaseClassDimension):
         Cnot = 0.5 * gnot + 1j * Snot
         Gamma = jnp.array([[Cnot, Cn], [Cp, Cnot]])
 
-        sqrtgamma = jnp.sqrt(jnp.real(Gamma))
+        sqrtgamma = jnp.sqrt(
+            jnp.real(Gamma).astype("complex64")
+        )  # This had a bug before. since we take the real part of Gamma, the array into jnp.sqrt is real and outputs nan if any of the elements is negative
+        # solved with astype(complex)
         L = jnp.multiply(Aij, sqrtgamma)
 
         Af = jnp.multiply(Aij, jnp.conjugate(Gamma))

@@ -671,7 +671,6 @@ from qdots_qll.resamplers import Resampler
 #     return jax.lax.while_loop(checker_obj.check_stop, smc_obj.step, initial_run)
 
 
-@jit
 class SMCUpdater(eqx.Module):
     model: eqx.Module
     exp_design: ExperimentalDesign
@@ -682,6 +681,7 @@ class SMCUpdater(eqx.Module):
         self.exp_design = exp_design
         self.resampler = resampler
 
+    @eqx.filter_jit
     def step(
         self,
         iteration: int,
@@ -729,12 +729,12 @@ class SMCUpdater(eqx.Module):
 
         new_dist: Distribution = update_log_weights(dist=dist, new_log_lkl=log_lkl)
 
-        # key, new_dist = jax.lax.cond(
-        #     new_dist.check_resampling(),
-        #     _aux_fun_resample,
-        #     _aux_fun_do_not_resample,
-        #     *(key, new_dist, new_data, self.resampler),
-        # )
+        key, new_dist = jax.lax.cond(
+            new_dist.check_resampling(),
+            _aux_fun_resample,
+            _aux_fun_do_not_resample,
+            *(key, new_dist, new_data, self.resampler),
+        )
         return key, new_dist, new_data
 
 
