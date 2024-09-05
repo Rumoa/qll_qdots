@@ -18,7 +18,6 @@ jax.config.update("jax_persistent_cache_min_compile_time_secs", 0)
 
 jax.config.update("jax_explain_cache_misses", True)
 
-
 from tensorflow_probability.substrates import jax as tfp
 
 from qdots_qll.distributions import (
@@ -26,17 +25,16 @@ from qdots_qll.distributions import (
 )
 from qdots_qll.exp_design import RandExpDesignGAME
 from qdots_qll.models.single_dot_weak_coupling_GAME import (
-    Data,
-    ExperimentSingleDotWeakCouplingGAME,
     SingleDotWeakCouplingGAME,
 )
+from data import Data
+from experiments import ExperimentSingleDotWeakCouplingGAME
 from qdots_qll.resamplers import MetropolisSampler
 from qdots_qll.smc import SMCUpdater
 
 seed = 0
 key = jax.random.key(seed=seed)
 key, subkey = jax.random.split(key)
-
 
 model = SingleDotWeakCouplingGAME()
 
@@ -49,10 +47,8 @@ boundaries = jnp.array(
     ]
 )
 
-
 loc = boundaries.mean(axis=1)
 scale = boundaries.std(axis=1)
-
 
 truncated_norm = tfp.distributions.TruncatedNormal(
     loc=loc, scale=scale / 1.5, low=boundaries[:, 0], high=boundaries[:, 1]
@@ -66,14 +62,12 @@ weights = jnp.ones(no_particles) / no_particles
 
 dist = Distribution(particles_locations=init_particles_locations, weights=weights)
 
-
 exp_design = RandExpDesignGAME()
 resampler = MetropolisSampler(boundaries=boundaries, model=model)
 # resampler = LiuWestResampler(boundaries=boundaries)
 
 
 smc = SMCUpdater(model=model, exp_design=exp_design, resampler=resampler)
-
 
 key, subkey = jax.random.split(key)
 
@@ -83,14 +77,12 @@ data = fake_first_data
 max_iterations = 10
 iteration = 0
 
-
 exp_design = RandExpDesignGAME()
 resampler = MetropolisSampler(boundaries=boundaries, model=model)
 # resampler = LiuWestResampler(boundaries=boundaries)
 
 
 smc = SMCUpdater(model=model, exp_design=exp_design, resampler=resampler)
-
 
 rmse_list = []
 no_particles = int(500)
@@ -100,7 +92,6 @@ init_particles_locations = truncated_norm.sample(
 weights = jnp.ones(no_particles) / no_particles
 
 dist = Distribution(particles_locations=init_particles_locations, weights=weights)
-
 
 key, subkey = jax.random.split(key)
 
@@ -119,22 +110,3 @@ with jax.log_compiles():
         dist.particles_locations.block_until_ready()
         iteration = iteration + 1
     jax.profiler.stop_trace()
-
-
-# max_iterations = 10
-# iteration = 0
-# for _ in range(max_iterations):
-#     key, dist, data = smc.step(iteration=iteration, key=key, dist=dist, data=data)
-#     if iteration == 0:
-#         data = data[1:]
-
-#     rmse = jnp.sqrt((model.true_parameters - dist.ev()) ** 2)
-#     rmse_list.append(rmse)
-
-#     if iteration % 10 == 0:
-#         print(dist.ev())
-#         print(jnp.diag(dist.cov()))
-
-#         print(f"RMSE: {rmse}")
-#         print("\n")
-#     iteration = iteration + 1

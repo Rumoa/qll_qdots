@@ -14,6 +14,7 @@ tests/__pycache__/
 .pytest_cache
 .vscode
 
+jax-cache/*
 
 # C extensions
 *.so
@@ -124,3 +125,4 @@ results/run_2024-03-28_16:31:39_results.job
 
 
 joblib_files/
+/example.log

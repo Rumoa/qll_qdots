@@ -3,7 +3,7 @@ from abc import abstractmethod
 import equinox as eqx
 from jaxtyping import Array
 
-from qdots_qll.models.single_dot_weak_coupling_GAME import Data
+from data import Data
 
 
 class Model(eqx.Module):

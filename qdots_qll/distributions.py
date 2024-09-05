@@ -29,14 +29,16 @@ class Distribution(eqx.Module):
         weights: Array = None,
         log_weights: Array = None,
     ) -> None:
-        self.particles_locations = ensure_particles_shape(particles_locations)
+        self.particles_locations = jnp.float32(
+            ensure_particles_shape(particles_locations)
+        )
         # self.no_particles = self.particles_locations.shape[0]
         # self.no_rv = self.particles_locations.shape[1]
 
         if weights is not None and log_weights is None:
-            self.log_weights = normalize_log_weights(jnp.log(weights))
+            self.log_weights = jnp.float32(normalize_log_weights(jnp.log(weights)))
         if weights is None and log_weights is not None:
-            self.log_weights = normalize_log_weights(log_weights)
+            self.log_weights = jnp.float32(normalize_log_weights(log_weights))
 
     @property
     def weights(self):
