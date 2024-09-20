@@ -2,7 +2,7 @@ import equinox as eqx
 import jax
 from jax import numpy as jnp
 
-from utils.utils import ensure_array
+from qdots_qll.utils.utils import ensure_array
 
 
 class Experiment(eqx.Module):
@@ -40,7 +40,7 @@ class ExperimentSingleDotWeakCouplingGAME(Experiment):
         return s
 
     def append(
-            self, other: "ExperimentSingleDotWeakCouplingGAME"
+        self, other: "ExperimentSingleDotWeakCouplingGAME"
     ) -> "ExperimentSingleDotWeakCouplingGAME":
         def append_if_array(x, y):
             if isinstance(x, jnp.ndarray):

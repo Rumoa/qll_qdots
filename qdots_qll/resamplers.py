@@ -7,7 +7,7 @@ from jaxtyping import Array, Float
 from tensorflow_probability.substrates import jax as tfp
 
 from qdots_qll.distributions import Distribution, _est_cov, _est_mean
-from data import Data
+from qdots_qll.data import Data
 
 
 def is_valid_particle_array_version(particle, boundaries):
@@ -191,7 +191,7 @@ def is_valid_particle(particle, boundaries):
 class Resampler(eqx.Module):
     @abstractmethod
     def resample(
-            self, subkey: Array, distribution: Distribution, data: Data, *args, **kwargs
+        self, subkey: Array, distribution: Distribution, data: Data, *args, **kwargs
     ) -> Distribution:
         pass
 
@@ -221,7 +221,7 @@ class LiuWestResampler(Resampler):
 
     @jax.jit
     def resample(
-            self, subkey, distribution: Distribution, *args, **kwargs
+        self, subkey, distribution: Distribution, *args, **kwargs
     ) -> Distribution:
         mu = distribution.ev()
         std_diag = jnp.sqrt(jnp.diag(distribution.cov()))
@@ -231,7 +231,7 @@ class LiuWestResampler(Resampler):
         locs_after_is = self.multinomial_importance_sampling(subkey, distribution)
 
         means = a * locs_after_is + (1 - a) * mu
-        h = (1 - a ** 2) ** 0.5
+        h = (1 - a**2) ** 0.5
         std_with_h = std_diag * h
 
         key, subkey = jax.random.split(key)
@@ -262,7 +262,7 @@ class MetropolisSampler(Resampler):
 
     @jax.jit
     def resample(
-            self, subkey, index_data, distribution: Distribution, data, *args, **kwargs
+        self, subkey, index_data, distribution: Distribution, data, *args, **kwargs
     ) -> Distribution:
         key, subkey = jax.random.split(subkey)
         # multinomial sampling to introduce variability
@@ -301,7 +301,7 @@ class MetropolisSampler(Resampler):
         return new_locs
 
     def generate_proposals(
-            self, subkey, original_dist: Distribution, locs_after_importance_sampling
+        self, subkey, original_dist: Distribution, locs_after_importance_sampling
     ) -> Array:
         cov = jnp.diag(original_dist.cov())
         return tfp.distributions.TruncatedNormal(

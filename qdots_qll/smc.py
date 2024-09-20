@@ -9,7 +9,7 @@ from jaxtyping import Array
 
 from qdots_qll.distributions import Distribution, update_log_weights
 from qdots_qll.exp_design import ExperimentalDesign
-from data import Data
+from qdots_qll.data import Data
 from qdots_qll.resamplers import Resampler
 
 
@@ -53,13 +53,13 @@ class SMCUpdater(eqx.Module):
 
     @jit
     def step(
-            self,
-            key: Array,
-            iteration: int,
-            distribution: Distribution,
-            data: Data,
-            *args,
-            **kwargs,
+        self,
+        key: Array,
+        iteration: int,
+        distribution: Distribution,
+        data: Data,
+        *args,
+        **kwargs,
     ) -> tuple[Array, Distribution]:
         # generate experiment
         # Measure experiment

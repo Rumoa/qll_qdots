@@ -1,8 +1,8 @@
 import equinox as eqx
 from jax import numpy as jnp
 
-from experiments import Experiment
-from utils.utils import ensure_array
+from qdots_qll.experiments import Experiment
+from qdots_qll.utils.utils import ensure_array
 
 
 class Data(eqx.Module):
